@@ -369,9 +369,7 @@ function App() {
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to bottom, transparent, #161b22)' }}></div>
               </div>
 
-              <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '-30px', zIndex: 10 }}>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>{storySpot.category}</span>
+<div style={{ padding: '30px 24px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '-30px', zIndex: 10 }}>              <div style={{ position: 'absolute', bottom: '10px', left: '20px', display: 'flex', gap: '8px', zIndex: 10 }}>                  <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>{storySpot.category}</span>
                   <span style={{ background: '#21262d', color: '#8b949e', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', border: '1px solid #30363d' }}>{storySpot.priceLevel}</span>
                 </div>
 
