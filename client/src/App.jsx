@@ -5,11 +5,11 @@ axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app
 
 const CATEGORIES = ['Все', 'Кофейня', 'Ресторан', 'Бар', 'Стрит-фуд', 'Парк / Локация'];
 const PRICE_LEVELS = ['💸', '💸💸', '💸💸💸'];
-const STATUSES = ['Уже был', 'Хочу сходить'];
+const STATUSES = ['Без статуса', 'Уже был', 'Хочу сходить']; // 🆕 Добавили пустой статус
 
 const initialFormState = {
   name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: '',
-  location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Уже был'
+  location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статуса'
 };
 
 function App() {
@@ -19,11 +19,10 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpotId, setEditingSpotId] = useState(null);
   
-  // ФИЛЬТРЫ И СОРТИРОВКА
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [selectedRating, setSelectedRating] = useState('Все');
-  const [selectedStatus, setSelectedStatus] = useState('Все'); // Фильтр по статусу
+  const [selectedStatus, setSelectedStatus] = useState('Все');
   const [sortBy, setSortBy] = useState('newest');
 
   const [formData, setFormData] = useState(initialFormState);
@@ -60,8 +59,8 @@ function App() {
       location: spot.location || '',
       googleMapsUrl: spot.googleMapsUrl || '',
       priceLevel: spot.priceLevel || '💸',
-      status: spot.status || 'Уже был',
-      tags: spot.tags ? spot.tags.join(', ') : '' // Превращаем массив в строку для инпута
+      status: spot.status || 'Без статуса', // 🆕 Подтягиваем статус
+      tags: spot.tags ? spot.tags.join(', ') : ''
     });
     setIsModalOpen(true);
   };
@@ -80,7 +79,6 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Превращаем строку тегов через запятую в чистый массив строк
     const processedTags = formData.tags
       .split(',')
       .map(t => t.trim())
@@ -115,11 +113,9 @@ function App() {
     setFormData(initialFormState);
   };
 
-  // === СУПЕР-ФИЛЬТРАЦИЯ НА ЛЕТУ ===
   const filteredAndSortedSpots = spots
     .filter(spot => {
       const query = searchQuery.toLowerCase();
-      // Ищем по имени, отзыву, району ИЛИ тегам
       const matchSearch = 
         spot.name.toLowerCase().includes(query) || 
         (spot.review && spot.review.toLowerCase().includes(query)) ||
@@ -128,7 +124,10 @@ function App() {
         
       const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
       const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
-      const matchStatus = selectedStatus === 'Все' || spot.status === selectedStatus;
+      
+      // 🆕 Логика фильтрации статусов (учитываем старые карточки, у которых статуса могло вообще не быть)
+      const spotStat = spot.status || 'Без статуса';
+      const matchStatus = selectedStatus === 'Все' || spotStat === selectedStatus;
 
       return matchSearch && matchCategory && matchRating && matchStatus;
     })
@@ -159,7 +158,6 @@ function App() {
 
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 0; }
         
-        /* КАРТОЧКА */
         .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
         .spot-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-color: #8b949e; }
         
@@ -170,7 +168,6 @@ function App() {
         .spot-image { width: 100%; height: 100px; object-fit: cover; background: #21262d; }
         .spot-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
         
-        /* Бэджи категории и статуса */
         .badge-row { display: flex; gap: 6px; flex-wrap: wrap; }
         .spot-tag { background: #238636; color: white; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 600; }
         .status-tag { background: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 2px 6px; border-radius: 6px; font-size: 10px; }
@@ -183,7 +180,6 @@ function App() {
         .spot-location { font-size: 11px; color: #8b949e; margin: 0; display: flex; align-items: center; gap: 2px; }
         .spot-rating { margin: 0; font-size: 12px; }
         
-        /* Мини-теги */
         .mini-tags-container { display: flex; gap: 4px; flex-wrap: wrap; margin: 2px 0; }
         .mini-tag { background: #30363d; color: #c9d1d9; font-size: 9px; padding: 1px 5px; border-radius: 4px; }
 
@@ -191,7 +187,6 @@ function App() {
         .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 5px; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
 
-        /* ДЕСКТОП */
         @media (min-width: 768px) {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 20px 0; }
           .spot-card { border-radius: 12px; }
@@ -216,7 +211,6 @@ function App() {
 
       <div style={{ width: '100%', padding: '20px 4%' }}>
         
-        {/* ШАПКА */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h1 style={{ margin: 0, color: '#f0f6fc', fontSize: '28px' }}>Kyiv Spots 🇺🇦</h1>
           <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
@@ -224,7 +218,6 @@ function App() {
           </button>
         </header>
 
-        {/* ПАНЕЛЬ ФИЛЬТРОВ И СОРТИРОВКИ */}
         <div className="filters-container">
           <div className="categories-scroll">
             {CATEGORIES.map(cat => (
@@ -241,6 +234,7 @@ function App() {
               <option value="Все">📖 Все статусы</option>
               <option value="Уже был">✅ Уже был</option>
               <option value="Хочу сходить">📌 Хочу сходить (Планы)</option>
+              <option value="Без статуса">⚪️ Без статуса</option>
             </select>
 
             <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
@@ -258,7 +252,6 @@ function App() {
           </div>
         </div>
 
-        {/* СПИСОК КАРТОЧЕК */}
         {filteredAndSortedSpots.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>
             {spots.length === 0 ? 'Пока ничего нет. Добавь первое заведение!' : 'Ничего не найдено по фильтрам 🤷‍♂️'}
@@ -282,9 +275,12 @@ function App() {
                 <div className="spot-content">
                   <div className="badge-row">
                     <span className="spot-tag">{spot.category}</span>
-                    <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
-                      {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
-                    </span>
+                    {/* 🆕 Рендерим плашку статуса ТОЛЬКО если статус выбран */}
+                    {spot.status && spot.status !== 'Без статуса' && (
+                      <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
+                        {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
+                      </span>
+                    )}
                   </div>
 
                   <div className="spot-title-row">
@@ -322,7 +318,6 @@ function App() {
           </div>
         )}
 
-        {/* МОДАЛЬНОЕ ОКНО С НОВЫМИ ПОЛЯМИ */}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '480px', border: '1px solid #30363d', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -345,7 +340,7 @@ function App() {
 
                   <select className="input-field" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} style={{ flex: 1 }}>
                     {STATUSES.map(st => (
-                      <option key={st}>{st}</option>
+                      <option key={st}>{st === 'Без статуса' ? '⚪️ Без статуса' : st}</option>
                     ))}
                   </select>
                 </div>

@@ -7,15 +7,14 @@ const spotSchema = new mongoose.Schema({
     review: String,
     imageUrl: String,
     instagramUrl: String,
-    
-    // 🆕 Новые мощные поля:
-    location: String,        // Район / Метро
-    googleMapsUrl: String,   // Ссылка на карты
-    priceLevel: String,      // Уровень цен (💸)
-    tags: [String],          // Массив тегов
-    status: { type: String, default: 'Уже был' } // Статус посещения
+    location: String,
+    googleMapsUrl: String,
+    priceLevel: String,
+    tags: [String],
+    // 👇 Делаем статус необязательным по умолчанию
+    status: { type: String, default: 'Без статуса' } 
 }, { 
-    timestamps: true // Автоматически добавляет время создания карточки
+    timestamps: true 
 });
 
 export default mongoose.model('Spot', spotSchema);
