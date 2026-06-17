@@ -215,7 +215,11 @@ function App() {
         .spot-review { margin: 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
         .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #30363d; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
-
+/* 🗺 ВОТ ЭТИ СТИЛИ ДЛЯ КАРТЫ ПРОПАЛИ */
+        .map-container-wrapper { height: 600px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
+        .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
+        .leaflet-popup-tip { background: #161b22; border: 1px solid #30363d; }
+        .leaflet-popup-content { margin: 10px; }
         .view-toggle { display: flex; background: #21262d; border-radius: 8px; overflow: hidden; border: 1px solid #30363d; }
         .view-btn { background: none; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .view-btn.active { background: #30363d; color: #fff; }
