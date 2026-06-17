@@ -190,13 +190,18 @@ function App() {
         .action-btn.delete:hover { background: #da3637; color: white; border-color: #f85149; }
         .action-btn.story:hover { background: #a371f7; color: white; border-color: #d2a8ff; }
 
-        .spot-image { width: 100%; height: 100px; object-fit: cover; background: #21262d; }
-        .spot-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+/* Фото делаем выше (150px) */
+        .spot-image { width: 100%; height: 150px; object-fit: cover; background: #21262d; }
         
-        .badge-row { display: flex; gap: 6px; flex-wrap: wrap; }
-        .spot-tag { background: #238636; color: white; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 600; }
-        .status-tag { background: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 2px 6px; border-radius: 6px; font-size: 10px; }
-        .status-tag.wishlist { border-color: #388bfd; color: #58a6ff; }
+        /* Добавляем верхний отступ (16px), чтобы текст не прилипал к краям фото */
+        .spot-content { padding: 16px 10px 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+        
+        /* Делаем блок абсолютным и кидаем его поверх фото (top: 10px, left: 10px) */
+        .badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
+        
+        /* Добавили тень (box-shadow) бейджам, чтобы они не сливались со светлыми фотками */
+        .spot-tag { background: #238636; color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .status-tag { background: #161b22; border: 1px solid #30363d; color: #8b949e; padding: 3px 8px; border-radius: 6px; font-size: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
         .spot-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 5px; margin-top: 4px; }
         .spot-title { margin: 0; color: #f0f6fc; font-size: 14px; word-wrap: break-word; line-height: 1.3; }
@@ -218,8 +223,8 @@ function App() {
         @media (min-width: 768px) {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 20px 0; }
           .spot-card { border-radius: 12px; }
-          .spot-image { height: 180px; }
-          .spot-content { padding: 18px; gap: 10px; }
+          .spot-image { height: 220px; }
+          .spot-content { padding: 24px 18px 18px; gap: 10px; }
           .spot-tag, .status-tag { padding: 4px 10px; border-radius: 8px; font-size: 12px; }
           .spot-title { font-size: 18px; }
           .spot-price { font-size: 14px; }
