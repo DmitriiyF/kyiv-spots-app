@@ -180,7 +180,7 @@ function App() {
         .search-input { flex-grow: 1; padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; min-width: 200px; }
         .select-custom { padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; }
 
-        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 0; }
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 10px 0; }
         
         .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
         .spot-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-color: #8b949e; }
