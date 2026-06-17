@@ -193,11 +193,11 @@ function App() {
 /* Фото делаем выше (150px) */
         .spot-image { width: 100%; height: 150px; object-fit: cover; background: #21262d; }
         
-        /* Добавляем верхний отступ (16px), чтобы текст не прилипал к краям фото */
-        .spot-content { padding: 16px 10px 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+/* Убираем верхний отступ, так как бейджи теперь сами задают расстояние */
+        .spot-content { padding: 0 10px 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
         
-        /* Делаем блок абсолютным и кидаем его поверх фото (top: 10px, left: 10px) */
-        .badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
+        /* 🔥 Тянем бейджи отрицательным отступом вверх, чтобы они сели ровно на нижний край фото */
+        .badge-row { position: relative; margin-top: -28px; margin-left: 10px; margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
         
         /* Добавили тень (box-shadow) бейджам, чтобы они не сливались со светлыми фотками */
         .spot-tag { background: #238636; color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
@@ -224,7 +224,8 @@ function App() {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 20px 0; }
           .spot-card { border-radius: 12px; }
           .spot-image { height: 220px; }
-          .spot-content { padding: 24px 18px 18px; gap: 10px; }
+          .badge-row { margin-left: 18px; margin-bottom: 12px; }
+          .spot-content { padding: 0 18px 18px; gap: 10px; }
           .spot-tag, .status-tag { padding: 4px 10px; border-radius: 8px; font-size: 12px; }
           .spot-title { font-size: 18px; }
           .spot-price { font-size: 14px; }
