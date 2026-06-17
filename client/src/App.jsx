@@ -5,7 +5,7 @@ axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app
 
 const CATEGORIES = ['Все', 'Кофейня', 'Ресторан', 'Бар', 'Стрит-фуд', 'Парк / Локация'];
 const PRICE_LEVELS = ['💸', '💸💸', '💸💸💸'];
-const STATUSES = ['Без статуса', 'Уже был', 'Хочу сходить']; // 🆕 Добавили пустой статус
+const STATUSES = ['Без статуса', 'Уже был', 'Хочу сходить']; 
 
 const initialFormState = {
   name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: '',
@@ -49,6 +49,11 @@ function App() {
 
   const handleEditClick = (spot) => {
     setEditingSpotId(spot._id);
+    
+    // 🛠 Защита: очищаем статус от эмодзи, если он уже сохранился с багом
+    let cleanStatus = spot.status || 'Без статуса';
+    if (cleanStatus === '⚪️ Без статуса') cleanStatus = 'Без статуса';
+
     setFormData({
       name: spot.name,
       category: spot.category,
@@ -59,7 +64,7 @@ function App() {
       location: spot.location || '',
       googleMapsUrl: spot.googleMapsUrl || '',
       priceLevel: spot.priceLevel || '💸',
-      status: spot.status || 'Без статуса', // 🆕 Подтягиваем статус
+      status: cleanStatus,
       tags: spot.tags ? spot.tags.join(', ') : ''
     });
     setIsModalOpen(true);
@@ -125,8 +130,10 @@ function App() {
       const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
       const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
       
-      // 🆕 Логика фильтрации статусов (учитываем старые карточки, у которых статуса могло вообще не быть)
-      const spotStat = spot.status || 'Без статуса';
+      // 🛠 Защита фильтра: проверяем, нет ли в базе сохраненного эмодзи
+      let spotStat = spot.status || 'Без статуса';
+      if (spotStat === '⚪️ Без статуса') spotStat = 'Без статуса';
+
       const matchStatus = selectedStatus === 'Все' || spotStat === selectedStatus;
 
       return matchSearch && matchCategory && matchRating && matchStatus;
@@ -275,8 +282,8 @@ function App() {
                 <div className="spot-content">
                   <div className="badge-row">
                     <span className="spot-tag">{spot.category}</span>
-                    {/* 🆕 Рендерим плашку статуса ТОЛЬКО если статус выбран */}
-                    {spot.status && spot.status !== 'Без статуса' && (
+                    {/* 🛠 Рендерим плашку ТОЛЬКО если статус выбран и нет застрявшего эмодзи */}
+                    {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
                       <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
                         {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
                       </span>
@@ -334,13 +341,14 @@ function App() {
                 <div className="form-row">
                   <select className="input-field" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} style={{ flex: 1 }}>
                     {CATEGORIES.filter(c => c !== 'Все').map(cat => (
-                      <option key={cat}>{cat}</option>
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
 
+                  {/* 🛠 Добавлен атрибут value={st}, чтобы отправлялся чистый текст без эмодзи */}
                   <select className="input-field" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} style={{ flex: 1 }}>
                     {STATUSES.map(st => (
-                      <option key={st}>{st === 'Без статуса' ? '⚪️ Без статуса' : st}</option>
+                      <option key={st} value={st}>{st === 'Без статуса' ? '⚪️ Без статуса' : st}</option>
                     ))}
                   </select>
                 </div>
@@ -354,7 +362,7 @@ function App() {
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Уровень цен</label>
                     <select className="input-field" value={formData.priceLevel} onChange={e => setFormData({...formData, priceLevel: e.target.value})}>
                       {PRICE_LEVELS.map(pl => (
-                        <option key={pl}>{pl}</option>
+                        <option key={pl} value={pl}>{pl}</option>
                       ))}
                     </select>
                   </div>
