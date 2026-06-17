@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import MapView from './components/MapView'; // 🆕 Импортируем наш новый модуль карты
+import MapView from './components/MapView'; 
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
@@ -78,19 +78,33 @@ function App() {
 
   const handleGoogleMapsChange = (e) => {
     const url = e.target.value;
-    setFormData(prev => ({ ...prev, googleMapsUrl: url }));
     
-    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (match) {
-      setFormData(prev => ({ ...prev, lat: parseFloat(match[1]), lng: parseFloat(match[2]) }));
-      addLog('📍 Координаты найдены автоматически!', 'success');
+    // Ищем разные форматы координат в длинной ссылке Google Maps
+    const matchAt = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    const matchBang = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+
+    if (matchAt) {
+      setFormData(prev => ({ ...prev, googleMapsUrl: url, lat: parseFloat(matchAt[1]), lng: parseFloat(matchAt[2]) }));
+      addLog('📍 Координаты вытянуты (формат @)!', 'success');
+    } else if (matchBang) {
+      setFormData(prev => ({ ...prev, googleMapsUrl: url, lat: parseFloat(matchBang[1]), lng: parseFloat(matchBang[2]) }));
+      addLog('📍 Координаты вытянуты (формат !3d)!', 'success');
+    } else {
+      setFormData(prev => ({ ...prev, googleMapsUrl: url }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const processedTags = formData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
-    const payload = { ...formData, tags: processedTags };
+    
+    // 🛠 Защита базы: если координаты пустые, отправляем null, чтобы MongoDB не крашилась
+    const payload = { 
+      ...formData, 
+      tags: processedTags,
+      lat: formData.lat ? parseFloat(formData.lat) : null,
+      lng: formData.lng ? parseFloat(formData.lng) : null
+    };
     
     if (editingSpotId) {
       try {
@@ -183,13 +197,10 @@ function App() {
         .mini-tag { background: #30363d; color: #c9d1d9; font-size: 9px; padding: 1px 5px; border-radius: 4px; }
 
         .spot-review { margin: 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
-        .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 5px; }
+        
+        /* 🛠 ВЕРНУЛ БЛОК СО ССЫЛКАМИ В КАРТОЧКЕ */
+        .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #30363d; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
-
-        .map-container-wrapper { height: 600px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
-        .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
-        .leaflet-popup-tip { background: #161b22; border: 1px solid #30363d; }
-        .leaflet-popup-content { margin: 10px; }
 
         .view-toggle { display: flex; background: #21262d; border-radius: 8px; overflow: hidden; border: 1px solid #30363d; }
         .view-btn { background: none; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
@@ -231,10 +242,7 @@ function App() {
                 🗺 На карте
               </button>
             </div>
-            
-            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-              + Добавить
-            </button>
+            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
           </div>
         </header>
 
@@ -249,21 +257,18 @@ function App() {
           
           <div className="filters-row">
             <input type="text" className="search-input" placeholder="🔍 Название, отзыв, метро или тег..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-            
             <select className="select-custom" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
               <option value="Все">📖 Все статусы</option>
               <option value="Уже был">✅ Уже был</option>
               <option value="Хочу сходить">📌 Хочу сходить (Планы)</option>
               <option value="Без статуса">⚪️ Без статуса</option>
             </select>
-
             <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
               <option value="Все">⭐️ Любой рейтинг</option>
               <option value="5">⭐⭐⭐⭐⭐ (5)</option>
               <option value="4">⭐⭐⭐⭐ (4)</option>
               <option value="3">⭐⭐⭐ (3)</option>
             </select>
-            
             {viewMode === 'grid' && (
               <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                 <option value="newest">🕒 Сначала новые</option>
@@ -274,7 +279,6 @@ function App() {
           </div>
         </div>
 
-        {/* 🗺 ЛОГИКА ОТОБРАЖЕНИЯ */}
         {filteredAndSortedSpots.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>
             Ничего не найдено 🤷‍♂️
@@ -308,16 +312,24 @@ function App() {
                   {spot.location && <p className="spot-location">📍 {spot.location}</p>}
                   <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p>
                   {spot.review && <p className="spot-review">{spot.review}</p>}
+                  
+                  {/* 🛠 ВЕРНУЛ ССЫЛКИ ИНСТАГРАМА И КАРТ */}
+                  <div className="links-row">
+                    {spot.instagramUrl && (
+                      <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link">📸 Inst</a>
+                    )}
+                    {spot.googleMapsUrl && (
+                      <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          /* 🆕 РЕНДЕРИМ КАРТУ ЧЕРЕЗ НОВЫЙ КОМПОНЕНТ */
           <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} />
         )}
 
-        {/* МОДАЛКА ДОБАВЛЕНИЯ */}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '480px', border: '1px solid #30363d', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -355,6 +367,9 @@ function App() {
                 <input className="input-field" placeholder="Теги через запятую" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
                 <input className="input-field" placeholder="Ссылка на картинку (URL)" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
                 
+                {/* 🛠 ВЕРНУЛ ПОЛЕ ДЛЯ ИНСТАГРАМА */}
+                <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
+                
                 <input className="input-field" placeholder="Ссылка на Google Maps (скопируй из браузера)" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />
                 
                 <div className="form-row" style={{ marginBottom: '12px' }}>
@@ -372,7 +387,6 @@ function App() {
           </div>
         )}
 
-        {/* ЛОГИ */}
         <div style={{ position: 'fixed', bottom: '20px', right: '20px', width: '320px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.8)', zIndex: 1000, fontFamily: 'monospace' }}>
           <div onClick={() => setIsLogsOpen(!isLogsOpen)} style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: 'bold', borderBottom: isLogsOpen ? '1px solid #30363d' : 'none', fontSize: '14px' }}>
             <span>📜 Логи сервера</span>
