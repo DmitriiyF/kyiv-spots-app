@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import MapView from './components/MapView'; // 🆕 Импортируем наш новый модуль карты
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
@@ -9,7 +10,7 @@ const STATUSES = ['Без статуса', 'Уже был', 'Хочу сходи
 
 const initialFormState = {
   name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: '',
-  location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статуса'
+  location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статуса', lat: '', lng: ''
 };
 
 function App() {
@@ -18,6 +19,8 @@ function App() {
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpotId, setEditingSpotId] = useState(null);
+  
+  const [viewMode, setViewMode] = useState('grid'); 
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
@@ -49,23 +52,15 @@ function App() {
 
   const handleEditClick = (spot) => {
     setEditingSpotId(spot._id);
-    
-    // 🛠 Защита: очищаем статус от эмодзи, если он уже сохранился с багом
     let cleanStatus = spot.status || 'Без статуса';
     if (cleanStatus === '⚪️ Без статуса') cleanStatus = 'Без статуса';
 
     setFormData({
-      name: spot.name,
-      category: spot.category,
-      rating: spot.rating,
-      review: spot.review || '',
-      imageUrl: spot.imageUrl || '',
-      instagramUrl: spot.instagramUrl || '',
-      location: spot.location || '',
-      googleMapsUrl: spot.googleMapsUrl || '',
-      priceLevel: spot.priceLevel || '💸',
-      status: cleanStatus,
-      tags: spot.tags ? spot.tags.join(', ') : ''
+      name: spot.name, category: spot.category, rating: spot.rating, review: spot.review || '',
+      imageUrl: spot.imageUrl || '', instagramUrl: spot.instagramUrl || '', location: spot.location || '',
+      googleMapsUrl: spot.googleMapsUrl || '', priceLevel: spot.priceLevel || '💸', status: cleanStatus,
+      tags: spot.tags ? spot.tags.join(', ') : '',
+      lat: spot.lat || '', lng: spot.lng || ''
     });
     setIsModalOpen(true);
   };
@@ -81,14 +76,20 @@ function App() {
     }
   };
 
+  const handleGoogleMapsChange = (e) => {
+    const url = e.target.value;
+    setFormData(prev => ({ ...prev, googleMapsUrl: url }));
+    
+    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (match) {
+      setFormData(prev => ({ ...prev, lat: parseFloat(match[1]), lng: parseFloat(match[2]) }));
+      addLog('📍 Координаты найдены автоматически!', 'success');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const processedTags = formData.tags
-      .split(',')
-      .map(t => t.trim())
-      .filter(t => t.length > 0);
-
+    const processedTags = formData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
     const payload = { ...formData, tags: processedTags };
     
     if (editingSpotId) {
@@ -121,19 +122,11 @@ function App() {
   const filteredAndSortedSpots = spots
     .filter(spot => {
       const query = searchQuery.toLowerCase();
-      const matchSearch = 
-        spot.name.toLowerCase().includes(query) || 
-        (spot.review && spot.review.toLowerCase().includes(query)) ||
-        (spot.location && spot.location.toLowerCase().includes(query)) ||
-        (spot.tags && spot.tags.some(t => t.toLowerCase().includes(query)));
-        
+      const matchSearch = spot.name.toLowerCase().includes(query) || (spot.review && spot.review.toLowerCase().includes(query)) || (spot.location && spot.location.toLowerCase().includes(query)) || (spot.tags && spot.tags.some(t => t.toLowerCase().includes(query)));
       const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
       const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
-      
-      // 🛠 Защита фильтра: проверяем, нет ли в базе сохраненного эмодзи
       let spotStat = spot.status || 'Без статуса';
       if (spotStat === '⚪️ Без статуса') spotStat = 'Без статуса';
-
       const matchStatus = selectedStatus === 'Все' || spotStat === selectedStatus;
 
       return matchSearch && matchCategory && matchRating && matchStatus;
@@ -168,7 +161,7 @@ function App() {
         .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
         .spot-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-color: #8b949e; }
         
-        .card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 10; }
+        .card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 100; }
         .action-btn { background: rgba(13, 17, 23, 0.85); border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; cursor: pointer; padding: 5px 8px; font-size: 12px; }
         .action-btn.delete:hover { background: #da3637; color: white; border-color: #f85149; }
 
@@ -183,7 +176,6 @@ function App() {
         .spot-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 5px; margin-top: 4px; }
         .spot-title { margin: 0; color: #f0f6fc; font-size: 14px; word-wrap: break-word; line-height: 1.3; }
         .spot-price { font-size: 12px; color: #8b949e; font-weight: bold; white-space: nowrap; }
-        
         .spot-location { font-size: 11px; color: #8b949e; margin: 0; display: flex; align-items: center; gap: 2px; }
         .spot-rating { margin: 0; font-size: 12px; }
         
@@ -193,6 +185,15 @@ function App() {
         .spot-review { margin: 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
         .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 5px; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
+
+        .map-container-wrapper { height: 600px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
+        .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
+        .leaflet-popup-tip { background: #161b22; border: 1px solid #30363d; }
+        .leaflet-popup-content { margin: 10px; }
+
+        .view-toggle { display: flex; background: #21262d; border-radius: 8px; overflow: hidden; border: 1px solid #30363d; }
+        .view-btn { background: none; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .view-btn.active { background: #30363d; color: #fff; }
 
         @media (min-width: 768px) {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 20px 0; }
@@ -218,11 +219,23 @@ function App() {
 
       <div style={{ width: '100%', padding: '20px 4%' }}>
         
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
           <h1 style={{ margin: 0, color: '#f0f6fc', fontSize: '28px' }}>Kyiv Spots 🇺🇦</h1>
-          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-            + Добавить
-          </button>
+          
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <div className="view-toggle">
+              <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>
+                📄 Списком
+              </button>
+              <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>
+                🗺 На карте
+              </button>
+            </div>
+            
+            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+              + Добавить
+            </button>
+          </div>
         </header>
 
         <div className="filters-container">
@@ -250,88 +263,66 @@ function App() {
               <option value="4">⭐⭐⭐⭐ (4)</option>
               <option value="3">⭐⭐⭐ (3)</option>
             </select>
-
-            <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="newest">🕒 Сначала новые</option>
-              <option value="oldest">⏳ Сначала старые</option>
-              <option value="rating">🔥 По рейтингу</option>
-            </select>
+            
+            {viewMode === 'grid' && (
+              <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <option value="newest">🕒 Сначала новые</option>
+                <option value="oldest">⏳ Сначала старые</option>
+                <option value="rating">🔥 По рейтингу</option>
+              </select>
+            )}
           </div>
         </div>
 
+        {/* 🗺 ЛОГИКА ОТОБРАЖЕНИЯ */}
         {filteredAndSortedSpots.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>
-            {spots.length === 0 ? 'Пока ничего нет. Добавь первое заведение!' : 'Ничего не найдено по фильтрам 🤷‍♂️'}
+            Ничего не найдено 🤷‍♂️
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid-container">
             {filteredAndSortedSpots.map(spot => (
               <div key={spot._id} className="spot-card">
-                
                 <div className="card-actions">
                   <button className="action-btn" onClick={() => handleEditClick(spot)}>✏️</button>
                   <button className="action-btn delete" onClick={() => handleDeleteClick(spot._id, spot.name)}>🗑</button>
                 </div>
-
                 {spot.imageUrl ? (
                   <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
                 ) : (
                   <div className="spot-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>Нет фото</div>
                 )}
-                
                 <div className="spot-content">
                   <div className="badge-row">
                     <span className="spot-tag">{spot.category}</span>
-                    {/* 🛠 Рендерим плашку ТОЛЬКО если статус выбран и нет застрявшего эмодзи */}
                     {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
                       <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
                         {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
                       </span>
                     )}
                   </div>
-
                   <div className="spot-title-row">
                     <h3 className="spot-title">{spot.name}</h3>
                     <span className="spot-price">{spot.priceLevel}</span>
                   </div>
-
-                  {spot.location && (
-                    <p className="spot-location">📍 {spot.location}</p>
-                  )}
-
+                  {spot.location && <p className="spot-location">📍 {spot.location}</p>}
                   <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p>
-
-                  {spot.tags && spot.tags.length > 0 && (
-                    <div className="mini-tags-container">
-                      {spot.tags.map((tag, idx) => (
-                        <span key={idx} className="mini-tag">#{tag}</span>
-                      ))}
-                    </div>
-                  )}
-
                   {spot.review && <p className="spot-review">{spot.review}</p>}
-
-                  <div className="links-row">
-                    {spot.instagramUrl && (
-                      <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link">📸 Inst</a>
-                    )}
-                    {spot.googleMapsUrl && (
-                      <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>
-                    )}
-                  </div>
                 </div>
               </div>
             ))}
           </div>
+        ) : (
+          /* 🆕 РЕНДЕРИМ КАРТУ ЧЕРЕЗ НОВЫЙ КОМПОНЕНТ */
+          <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} />
         )}
 
+        {/* МОДАЛКА ДОБАВЛЕНИЯ */}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '480px', border: '1px solid #30363d', maxHeight: '90vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '22px' }}>
-                  {editingSpotId ? 'Редактировать место' : 'Новое место'}
-                </h2>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '22px' }}>{editingSpotId ? 'Редактировать место' : 'Новое место'}</h2>
                 <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
               </div>
               
@@ -340,16 +331,10 @@ function App() {
                 
                 <div className="form-row">
                   <select className="input-field" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} style={{ flex: 1 }}>
-                    {CATEGORIES.filter(c => c !== 'Все').map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
+                    {CATEGORIES.filter(c => c !== 'Все').map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
-
-                  {/* 🛠 Добавлен атрибут value={st}, чтобы отправлялся чистый текст без эмодзи */}
                   <select className="input-field" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} style={{ flex: 1 }}>
-                    {STATUSES.map(st => (
-                      <option key={st} value={st}>{st === 'Без статуса' ? '⚪️ Без статуса' : st}</option>
-                    ))}
+                    {STATUSES.map(st => <option key={st} value={st}>{st === 'Без статуса' ? '⚪️ Без статуса' : st}</option>)}
                   </select>
                 </div>
 
@@ -361,22 +346,21 @@ function App() {
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Уровень цен</label>
                     <select className="input-field" value={formData.priceLevel} onChange={e => setFormData({...formData, priceLevel: e.target.value})}>
-                      {PRICE_LEVELS.map(pl => (
-                        <option key={pl} value={pl}>{pl}</option>
-                      ))}
+                      {PRICE_LEVELS.map(pl => <option key={pl} value={pl}>{pl}</option>)}
                     </select>
                   </div>
                 </div>
 
                 <input className="input-field" placeholder="Район / Метро (например: Подол)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
-                
-                <input className="input-field" placeholder="Теги через запятую (WiFi, Топ матча, Летняя терраса)" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
-
+                <input className="input-field" placeholder="Теги через запятую" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
                 <input className="input-field" placeholder="Ссылка на картинку (URL)" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
                 
-                <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
+                <input className="input-field" placeholder="Ссылка на Google Maps (скопируй из браузера)" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />
                 
-                <input className="input-field" placeholder="Ссылка на Google Maps (Маршрут)" value={formData.googleMapsUrl} onChange={e => setFormData({...formData, googleMapsUrl: e.target.value})} />
+                <div className="form-row" style={{ marginBottom: '12px' }}>
+                  <input className="input-field" placeholder="Широта (lat)" value={formData.lat} onChange={e => setFormData({...formData, lat: e.target.value})} style={{ marginBottom: 0 }} />
+                  <input className="input-field" placeholder="Долгота (lng)" value={formData.lng} onChange={e => setFormData({...formData, lng: e.target.value})} style={{ marginBottom: 0 }} />
+                </div>
                 
                 <textarea className="input-field" placeholder="Твой отзыв..." value={formData.review} onChange={e => setFormData({...formData, review: e.target.value})} style={{ minHeight: '80px', resize: 'vertical' }} />
                 
