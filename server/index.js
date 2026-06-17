@@ -37,10 +37,11 @@ app.post('/api/spots', async (req, res) => {
         await newSpot.save();
         res.json(newSpot);
     } catch (err) {
-        console.error("❌ ОШИБКА СОХРАНЕНИЯ:", err.message); // <--- ДОБАВИЛИ ЭТО
+        console.error("❌ ОШИБКА СОХРАНЕНИЯ:", err.message);
         res.status(500).json({ error: "Ошибка при сохранении" });
     }
 });
+
 // 🗑 УДАЛИТЬ заведение
 app.delete('/api/spots/:id', async (req, res) => {
     try {
