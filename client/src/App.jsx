@@ -359,9 +359,9 @@ function App() {
             {/* ЭТОТ БЛОК БУДЕТ СКОПИРОВАН СКРИПТОМ */}
             <div id="story-card-export" style={{ width: '360px', height: '640px', backgroundColor: '#161b22', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'sans-serif', border: '1px solid #30363d' }}>
               
-              <div style={{ height: '55%', width: '100%', position: 'relative' }}>
+            <div style={{ height: '55%', width: '100%', position: 'relative' }}>
                 {storySpot.imageUrl ? (
-                  <img src={storySpot.imageUrl} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="bg" />
+                  <img src={storySpot.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="bg" />
                 ) : (
                   <div style={{ width: '100%', height: '100%', background: '#21262d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Без фото</div>
                 )}
