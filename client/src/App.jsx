@@ -365,14 +365,17 @@ function App() {
                 ) : (
                   <div style={{ width: '100%', height: '100%', background: '#21262d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Без фото</div>
                 )}
-                {/* Градиент для красивого перехода к тексту */}
+{/* Градиент для красивого перехода к тексту */}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to bottom, transparent, #161b22)' }}></div>
+                
+                {/* 🔥 Бейджи теперь привязаны к низу ФОТОГРАФИИ */}
+                <div style={{ position: 'absolute', bottom: '15px', left: '24px', display: 'flex', gap: '8px', zIndex: 20 }}>
+                  <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{storySpot.category}</span>
+                  <span style={{ background: '#21262d', color: '#8b949e', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', border: '1px solid #30363d', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{storySpot.priceLevel}</span>
+                </div>
               </div>
 
-<div style={{ padding: '30px 24px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '-30px', zIndex: 10 }}>              <div style={{ position: 'absolute', bottom: '10px', left: '20px', display: 'flex', gap: '8px', zIndex: 10 }}>                  <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>{storySpot.category}</span>
-                  <span style={{ background: '#21262d', color: '#8b949e', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', border: '1px solid #30363d' }}>{storySpot.priceLevel}</span>
-                </div>
-
+<div style={{ padding: '30px 24px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '-30px', zIndex: 10 }}>
                 <h1 style={{ margin: '0 0 8px 0', color: '#f0f6fc', fontSize: '32px', lineHeight: 1.1 }}>{storySpot.name}</h1>
                 
                 {storySpot.location && (
