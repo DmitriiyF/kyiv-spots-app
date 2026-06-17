@@ -8,13 +8,15 @@ const CATEGORIES = ['Все', 'Кофейня', 'Ресторан', 'Бар', '�
 function App() {
   const [spots, setSpots] = useState([]);
   const [logs, setLogs] = useState([]);
-  const [isLogsOpen, setIsLogsOpen] = useState(true);
+  const [isLogsOpen, setIsLogsOpen] = useState(false); // По умолчанию свернули, чтоб не мешали
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSpotId, setEditingSpotId] = useState(null); // ID редактируемого места (null если добавляем)
   
-  // === СТЕЙТЫ ДЛЯ ФИЛЬТРОВ ===
+  // ФИЛЬТРЫ И СОРТИРОВКА
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [selectedRating, setSelectedRating] = useState('Все');
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'rating'
 
   const [formData, setFormData] = useState({
     name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: ''
@@ -40,35 +42,84 @@ function App() {
     fetchSpots();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    addLog(`Добавляем "${formData.name}"...`, 'info');
+  // ОТКРЫТЬ МОДАЛКУ ДЛЯ РЕДАКТИРОВАНИЯ
+  const handleEditClick = (spot) => {
+    setEditingSpotId(spot._id);
+    setFormData({
+      name: spot.name,
+      category: spot.category,
+      rating: spot.rating,
+      review: spot.review || '',
+      imageUrl: spot.imageUrl || '',
+      instagramUrl: spot.instagramUrl || ''
+    });
+    setIsModalOpen(true);
+  };
+
+  // УДАЛЕНИЕ ЗАВЕДЕНИЯ
+  const handleDeleteClick = async (id, name) => {
+    if (!window.confirm(`Реально удалить "${name}" из базы?`)) return;
+    
+    addLog(`Удаляем "${name}"...`, 'info');
     try {
-      await axios.post('/api/spots', formData);
-      addLog(`Успех! Заведение добавлено.`, 'success');
-      setFormData({ name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: '' });
-      setIsModalOpen(false);
+      await axios.delete(`/api/spots/${id}`);
+      addLog(`Успешно удалено: "${name}"`, 'success');
       fetchSpots();
     } catch (error) {
-      addLog(`Ошибка при добавлении: ${error.message}`, 'error');
+      addLog(`Ошибка удаления: ${error.message}`, 'error');
     }
   };
 
-  // === ЛОГИКА МГНОВЕННОЙ ФИЛЬТРАЦИИ ===
-  const filteredSpots = spots.filter(spot => {
-    // 1. Поиск по названию или тексту отзыва
-    const matchSearch = 
-      spot.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (spot.review && spot.review.toLowerCase().includes(searchQuery.toLowerCase()));
+  // ОТПРАВКА ФОРМЫ (СОЗДАНИЕ ИЛИ ОБНОВЛЕНИЕ)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    // 2. Проверка категории
-    const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
-    
-    // 3. Проверка рейтинга
-    const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
+    if (editingSpotId) {
+      // Редактируем
+      addLog(`Обновляем "${formData.name}"...`, 'info');
+      try {
+        await axios.put(`/api/spots/${editingSpotId}`, formData);
+        addLog(`Успех! Данные "${formData.name}" обновлены.`, 'success');
+        closeModal();
+        fetchSpots();
+      } catch (error) {
+        addLog(`Ошибка обновления: ${error.message}`, 'error');
+      }
+    } else {
+      // Добавляем новое
+      addLog(`Добавляем "${formData.name}"...`, 'info');
+      try {
+        await axios.post('/api/spots', formData);
+        addLog(`Успех! Заведение добавлено.`, 'success');
+        closeModal();
+        fetchSpots();
+      } catch (error) {
+        addLog(`Ошибка при добавлении: ${error.message}`, 'error');
+      }
+    }
+  };
 
-    return matchSearch && matchCategory && matchRating;
-  });
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingSpotId(null);
+    setFormData({ name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: '' });
+  };
+
+  // === МГНОВЕННАЯ ФИЛЬТРАЦИЯ И СОРТИРОВКА ФРОНТЕНДОМ ===
+  const filteredAndSortedSpots = spots
+    .filter(spot => {
+      const matchSearch = spot.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (spot.review && spot.review.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
+      const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
+      return matchSearch && matchCategory && matchRating;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') return b._id.localeCompare(a._id); // Свежие сверху (по ID Монго)
+      if (sortBy === 'oldest') return a._id.localeCompare(b._id); // Старые сверху
+      if (sortBy === 'rating') return b.rating - a.rating; // Высокий рейтинг сверху
+      return 0;
+    });
 
   return (
     <>
@@ -76,37 +127,38 @@ function App() {
         body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; }
         * { box-sizing: border-box; }
         
-        /* === ФИЛЬТРЫ === */
         .filters-container { background: #161b22; padding: 15px; border-radius: 12px; border: 1px solid #30363d; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
         .filters-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        
-        /* Скроллируемые категории для мобилок */
         .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .categories-scroll::-webkit-scrollbar { display: none; }
         
         .pill { padding: 8px 16px; background: #21262d; border: 1px solid #30363d; border-radius: 20px; color: #c9d1d9; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-size: 14px; }
-        .pill:hover { border-color: #8b949e; }
         .pill.active { background: #238636; border-color: #2ea043; color: white; font-weight: bold; }
         
         .search-input { flex-grow: 1; padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; min-width: 200px; }
-        .search-input:focus { border-color: #58a6ff; }
-        
-        .rating-select { padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; }
+        .select-custom { padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; }
 
-        /* === КАРТОЧКИ === */
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 0; }
-        .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+        
+        /* КАРТОЧКА С ИКОНКАМИ */
+        .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
         .spot-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-color: #8b949e; }
         
+        /* Панель управления на карточке */
+        .card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; zIndex: 10; opacity: 0.8; }
+        .spot-card:hover .card-actions { opacity: 1; }
+        .action-btn { background: rgba(13, 17, 23, 0.85); border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; cursor: pointer; padding: 5px 8px; font-size: 12px; transition: all 0.2s; }
+        .action-btn:hover { background: #21262d; border-color: #8b949e; }
+        .action-btn.delete:hover { background: #da3637; border-color: #f85149; color: white; }
+
         .spot-image { width: 100%; height: 100px; object-fit: cover; background: #21262d; }
         .spot-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
         .spot-tag { align-self: flex-start; background: #238636; color: white; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 600; margin-bottom: 8px; }
-        .spot-title { margin: 0 0 6px 0; color: #f0f6fc; font-size: 14px; word-wrap: break-word; }
+        .spot-title { margin: 0 0 6px 0; color: #f0f6fc; font-size: 14px; padding-right: 45px; word-wrap: break-word; }
         .spot-rating { margin: 0 0 6px 0; font-size: 12px; }
         .spot-review { margin: 0 0 10px 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; margin-top: auto; }
 
-        /* === ДЕСКТОПНАЯ ВЕРСИЯ === */
         @media (min-width: 768px) {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 20px 0; }
           .spot-card { border-radius: 12px; }
@@ -117,7 +169,6 @@ function App() {
           .spot-rating { font-size: 14px; margin-bottom: 12px; }
           .spot-review { font-size: 14px; margin-bottom: 15px; }
           .spot-link { font-size: 14px; }
-          .filters-row { flex-wrap: nowrap; }
         }
 
         .btn-primary { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
@@ -136,34 +187,20 @@ function App() {
           </button>
         </header>
 
-        {/* ПАНЕЛЬ ФИЛЬТРОВ */}
+        {/* ПАНЕЛЬ ФИЛЬТРОВ И СОРТИРОВКИ */}
         <div className="filters-container">
           <div className="categories-scroll">
             {CATEGORIES.map(cat => (
-              <button 
-                key={cat} 
-                className={`pill ${selectedCategory === cat ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat)}
-              >
+              <button key={cat} className={`pill ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>
                 {cat}
               </button>
             ))}
           </div>
           
           <div className="filters-row">
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="🔍 Поиск по названию или отзыву..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <input type="text" className="search-input" placeholder="🔍 Поиск по названию или отзыву..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             
-            <select 
-              className="rating-select" 
-              value={selectedRating} 
-              onChange={(e) => setSelectedRating(e.target.value)}
-            >
+            <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
               <option value="Все">⭐️ Любой рейтинг</option>
               <option value="5">⭐️⭐️⭐️⭐️⭐️ (5)</option>
               <option value="4">⭐️⭐️⭐️⭐️ (4)</option>
@@ -171,23 +208,38 @@ function App() {
               <option value="2">⭐️⭐️ (2)</option>
               <option value="1">⭐️ (1)</option>
             </select>
+
+            {/* ВЫПАДАЮЩИЙ СПИСОК СОРТИРОВКИ */}
+            <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="newest">🕒 Сначала новые</option>
+              <option value="oldest">⏳ Сначала старые</option>
+              <option value="rating">🔥 По рейтингу (высокий)</option>
+            </select>
           </div>
         </div>
 
         {/* СПИСОК ЗАВЕДЕНИЙ */}
-        {filteredSpots.length === 0 ? (
+        {filteredAndSortedSpots.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>
-            {spots.length === 0 ? 'Пока ничего нет. Добавь первое заведение!' : 'По таким фильтрам ничего не найдено 🤷‍♂️'}
+            {spots.length === 0 ? 'Пока ничего нет. Добавь первое заведение!' : 'Ничего не найдено по фильтрам 🤷‍♂️'}
           </div>
         ) : (
           <div className="grid-container">
-            {filteredSpots.map(spot => (
+            {filteredAndSortedSpots.map(spot => (
               <div key={spot._id} className="spot-card">
+                
+                {/* ИКОНКИ УПРАВЛЕНИЯ В УГЛУ */}
+                <div className="card-actions">
+                  <button className="action-btn" onClick={() => handleEditClick(spot)} title="Редактировать">✏️</button>
+                  <button className="action-btn delete" onClick={() => handleDeleteClick(spot._id, spot.name)} title="Удалить">🗑</button>
+                </div>
+
                 {spot.imageUrl ? (
                   <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
                 ) : (
                   <div className="spot-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>Нет фото</div>
                 )}
+                
                 <div className="spot-content">
                   <span className="spot-tag">{spot.category}</span>
                   <h3 className="spot-title">{spot.name}</h3>
@@ -204,13 +256,15 @@ function App() {
           </div>
         )}
 
-        {/* ВСПЛЫВАЮЩЕЕ ОКНО (ДОБАВЛЕНИЕ) */}
+        {/* УНИВЕРСАЛЬНОЕ ОКНО (ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ) */}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '30px', borderRadius: '12px', width: '100%', maxWidth: '450px', border: '1px solid #30363d' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '22px' }}>Новое место</h2>
-                <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '22px' }}>
+                  {editingSpotId ? 'Редактировать место' : 'Новое место'}
+                </h2>
+                <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
               </div>
               
               <form onSubmit={handleSubmit}>
@@ -232,7 +286,9 @@ function App() {
                 
                 <textarea className="input-field" placeholder="Твой отзыв..." value={formData.review} onChange={e => setFormData({...formData, review: e.target.value})} style={{ minHeight: '100px', resize: 'vertical' }} />
                 
-                <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '16px' }}>Сохранить в базу</button>
+                <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '16px' }}>
+                  {editingSpotId ? 'Сохранить изменения' : 'Сохранить в базу'}
+                </button>
               </form>
             </div>
           </div>

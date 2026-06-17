@@ -41,6 +41,27 @@ app.post('/api/spots', async (req, res) => {
         res.status(500).json({ error: "Ошибка при сохранении" });
     }
 });
+// 🗑 УДАЛИТЬ заведение
+app.delete('/api/spots/:id', async (req, res) => {
+    try {
+        await Spot.findByIdAndDelete(req.params.id);
+        res.json({ message: "Заведение успешно удалено" });
+    } catch (err) {
+        console.error("❌ ОШИБКА УДАЛЕНИЯ:", err.message);
+        res.status(500).json({ error: "Ошибка при удалении" });
+    }
+});
+
+// ✏️ РЕДАКТИРОВАТЬ заведение
+app.put('/api/spots/:id', async (req, res) => {
+    try {
+        const updatedSpot = await Spot.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedSpot);
+    } catch (err) {
+        console.error("❌ ОШИБКА ОБНОВЛЕНИЯ:", err.message);
+        res.status(500).json({ error: "Ошибка при обновлении" });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
