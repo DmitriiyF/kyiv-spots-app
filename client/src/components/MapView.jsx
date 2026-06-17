@@ -1,20 +1,19 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// Настройка дефолтных маркеров
-const customMarker = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+// 🔥 Абсолютно пуленепробиваемый фикс дефолтных икон Leaflet для React + Vite.
+// Мы принудительно переписываем пути к картинкам на стабильные CDN-ссылки глобально для всей библиотеки.
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
 });
 
 export default function MapView({ spots, onEditClick }) {
-  // 🛡 Бронебойный фильтр: убираем всё, что не является валидным числом, защищая Leaflet от падения
+  // Тщательно отбираем только заведения с валидными координатами
   const spotsWithCoords = spots.filter(spot => 
-    spot &&
+    spot && 
     spot.lat !== undefined && spot.lng !== undefined &&
     spot.lat !== null && spot.lng !== null &&
     spot.lat !== '' && spot.lng !== '' &&
@@ -23,13 +22,23 @@ export default function MapView({ spots, onEditClick }) {
 
   return (
     <div className="map-container-wrapper">
-      <MapContainer center={[50.4501, 30.5234]} zoom={12} style={{ height: '100%', width: '100%' }}>
+      {/* 🔥 Главная React-магия: добавляем динамический атрибут key, зависящий от количества точек. 
+        Поскольку Leaflet ленив и не умеет перерисовываться на лету при обновлении пропсов,
+        изменение key заставит React полностью перемонтировать карту с чистого листа, 
+        как только в базе появятся или изменятся координаты!
+      */}
+      <MapContainer 
+        key={spotsWithCoords.length}
+        center={[50.4501, 30.5234]} 
+        zoom={12} 
+        style={{ height: '100%', width: '100%' }}
+      >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
         {spotsWithCoords.map(spot => (
-          <Marker key={spot._id} position={[parseFloat(spot.lat), parseFloat(spot.lng)]} icon={customMarker}>
+          <Marker key={spot._id} position={[parseFloat(spot.lat), parseFloat(spot.lng)]}>
             <Popup>
               <div style={{ textAlign: 'center', color: '#c9d1d9' }}>
                 <h3 style={{ margin: '0 0 5px 0', color: '#58a6ff' }}>{spot.name}</h3>
