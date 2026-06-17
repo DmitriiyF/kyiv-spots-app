@@ -1,36 +1,48 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// 🔥 Абсолютно пуленепробиваемый фикс дефолтных икон Leaflet для React + Vite.
-// Мы принудительно переписываем пути к картинкам на стабильные CDN-ссылки глобально для всей библиотеки.
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+// Железобетонные ссылки на иконки (используем стабильный CDN)
+const markerIcon = new L.Icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 export default function MapView({ spots, onEditClick }) {
-  // Тщательно отбираем только заведения с валидными координатами
+  // Фильтруем заведения, у которых ТОЧНО есть валидные числа в координатах
   const spotsWithCoords = spots.filter(spot => 
     spot && 
-    spot.lat !== undefined && spot.lng !== undefined &&
-    spot.lat !== null && spot.lng !== null &&
-    spot.lat !== '' && spot.lng !== '' &&
-    !isNaN(Number(spot.lat)) && !isNaN(Number(spot.lng))
+    spot.lat && spot.lng && 
+    !isNaN(parseFloat(spot.lat)) && 
+    !isNaN(parseFloat(spot.lng))
   );
+
+  // 🛡 ЕСЛИ КООРДИНАТ НЕТ НИ У КОГО — показываем понятное сообщение вместо пустой карты
+  if (spotsWithCoords.length === 0) {
+    return (
+      <div className="map-container-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#161b22', color: '#8b949e', flexDirection: 'column', gap: '10px' }}>
+        <span style={{ fontSize: '40px' }}>🗺</span>
+        <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#c9d1d9' }}>На карте пока пусто</p>
+        <p style={{ margin: 0, fontSize: '14px' }}>У твоих заведений в базе нет координат.</p>
+        <p style={{ margin: 0, fontSize: '12px', color: '#58a6ff' }}>Нажми ✏️ на карточке в режиме "Списком", вставь ссылку Google Maps и сохрани!</p>
+      </div>
+    );
+  }
+
+  // Центрируем карту по первому заведению из списка
+  const centerLat = parseFloat(spotsWithCoords[0].lat);
+  const centerLng = parseFloat(spotsWithCoords[0].lng);
 
   return (
     <div className="map-container-wrapper">
-      {/* 🔥 Главная React-магия: добавляем динамический атрибут key, зависящий от количества точек. 
-        Поскольку Leaflet ленив и не умеет перерисовываться на лету при обновлении пропсов,
-        изменение key заставит React полностью перемонтировать карту с чистого листа, 
-        как только в базе появятся или изменятся координаты!
-      */}
       <MapContainer 
-        key={spotsWithCoords.length}
-        center={[50.4501, 30.5234]} 
-        zoom={12} 
+        key={spotsWithCoords.length} 
+        center={[centerLat, centerLng]} 
+        zoom={13} 
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
@@ -38,7 +50,11 @@ export default function MapView({ spots, onEditClick }) {
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
         {spotsWithCoords.map(spot => (
-          <Marker key={spot._id} position={[parseFloat(spot.lat), parseFloat(spot.lng)]}>
+          <Marker 
+            key={spot._id} 
+            position={[parseFloat(spot.lat), parseFloat(spot.lng)]} 
+            icon={markerIcon} // 🔥 Принудительно отдаем иконку КАЖДОМУ маркеру
+          >
             <Popup>
               <div style={{ textAlign: 'center', color: '#c9d1d9' }}>
                 <h3 style={{ margin: '0 0 5px 0', color: '#58a6ff' }}>{spot.name}</h3>
