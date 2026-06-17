@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView'; 
+import 'leaflet/dist/leaflet.css'; // 🌐 Перенесли сюда, чтобы стили карты были доступны глобально сразу
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
@@ -13,13 +14,23 @@ const initialFormState = {
   location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статуса', lat: '', lng: ''
 };
 
+// 🗺 Универсальный хелпер для вытягивания координат из любых длинных ссылок Google Maps
+const extractCoords = (url) => {
+  if (!url) return { lat: '', lng: '' };
+  const matchAt = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  const matchBang = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  
+  if (matchAt) return { lat: matchAt[1], lng: matchAt[2] };
+  if (matchBang) return { lat: matchBang[1], lng: matchBang[2] };
+  return { lat: '', lng: '' };
+};
+
 function App() {
   const [spots, setSpots] = useState([]);
   const [logs, setLogs] = useState([]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpotId, setEditingSpotId] = useState(null);
-  
   const [viewMode, setViewMode] = useState('grid'); 
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,12 +66,23 @@ function App() {
     let cleanStatus = spot.status || 'Без статуса';
     if (cleanStatus === '⚪️ Без статуса') cleanStatus = 'Без статуса';
 
+    // 🔥 Если у старой записи нет координат, но есть ссылка — вытягиваем их на лету при открытии модалки
+    const autoCoords = extractCoords(spot.googleMapsUrl);
+
     setFormData({
-      name: spot.name, category: spot.category, rating: spot.rating, review: spot.review || '',
-      imageUrl: spot.imageUrl || '', instagramUrl: spot.instagramUrl || '', location: spot.location || '',
-      googleMapsUrl: spot.googleMapsUrl || '', priceLevel: spot.priceLevel || '💸', status: cleanStatus,
+      name: spot.name,
+      category: spot.category,
+      rating: spot.rating,
+      review: spot.review || '',
+      imageUrl: spot.imageUrl || '',
+      instagramUrl: spot.instagramUrl || '',
+      location: spot.location || '',
+      googleMapsUrl: spot.googleMapsUrl || '',
+      priceLevel: spot.priceLevel || '💸',
+      status: cleanStatus,
       tags: spot.tags ? spot.tags.join(', ') : '',
-      lat: spot.lat || '', lng: spot.lng || ''
+      lat: spot.lat || autoCoords.lat || '',
+      lng: spot.lng || autoCoords.lng || ''
     });
     setIsModalOpen(true);
   };
@@ -78,19 +100,17 @@ function App() {
 
   const handleGoogleMapsChange = (e) => {
     const url = e.target.value;
+    const coords = extractCoords(url);
     
-    // Ищем разные форматы координат в длинной ссылке Google Maps
-    const matchAt = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-    const matchBang = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-
-    if (matchAt) {
-      setFormData(prev => ({ ...prev, googleMapsUrl: url, lat: parseFloat(matchAt[1]), lng: parseFloat(matchAt[2]) }));
-      addLog('📍 Координаты вытянуты (формат @)!', 'success');
-    } else if (matchBang) {
-      setFormData(prev => ({ ...prev, googleMapsUrl: url, lat: parseFloat(matchBang[1]), lng: parseFloat(matchBang[2]) }));
-      addLog('📍 Координаты вытянуты (формат !3d)!', 'success');
-    } else {
-      setFormData(prev => ({ ...prev, googleMapsUrl: url }));
+    setFormData(prev => ({
+      ...prev,
+      googleMapsUrl: url,
+      lat: coords.lat || prev.lat,
+      lng: coords.lng || prev.lng
+    }));
+    
+    if (coords.lat) {
+      addLog('📍 Координаты успешно распознаны!', 'success');
     }
   };
 
@@ -98,12 +118,16 @@ function App() {
     e.preventDefault();
     const processedTags = formData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
     
-    // 🛠 Защита базы: если координаты пустые, отправляем null, чтобы MongoDB не крашилась
+    // 🔥 Железобетонная страховка: если поля координат пустые, пробуем вытянуть их прямо перед отправкой
+    const backupCoords = extractCoords(formData.googleMapsUrl);
+    const finalLat = formData.lat || backupCoords.lat;
+    const finalLng = formData.lng || backupCoords.lng;
+
     const payload = { 
       ...formData, 
       tags: processedTags,
-      lat: formData.lat ? parseFloat(formData.lat) : null,
-      lng: formData.lng ? parseFloat(formData.lng) : null
+      lat: finalLat ? parseFloat(finalLat) : null,
+      lng: finalLng ? parseFloat(finalLng) : null
     };
     
     if (editingSpotId) {
@@ -198,9 +222,13 @@ function App() {
 
         .spot-review { margin: 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
         
-        /* 🛠 ВЕРНУЛ БЛОК СО ССЫЛКАМИ В КАРТОЧКЕ */
         .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #30363d; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
+
+        .map-container-wrapper { height: 600px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
+        .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
+        .leaflet-popup-tip { background: #161b22; border: 1px solid #30363d; }
+        .leaflet-popup-content { margin: 10px; }
 
         .view-toggle { display: flex; background: #21262d; border-radius: 8px; overflow: hidden; border: 1px solid #30363d; }
         .view-btn { background: none; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
@@ -311,9 +339,17 @@ function App() {
                   </div>
                   {spot.location && <p className="spot-location">📍 {spot.location}</p>}
                   <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p>
+                  
+                  {spot.tags && spot.tags.length > 0 && (
+                    <div className="mini-tags-container">
+                      {spot.tags.map((tag, idx) => (
+                        <span key={idx} className="mini-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  
                   {spot.review && <p className="spot-review">{spot.review}</p>}
                   
-                  {/* 🛠 ВЕРНУЛ ССЫЛКИ ИНСТАГРАМА И КАРТ */}
                   <div className="links-row">
                     {spot.instagramUrl && (
                       <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link">📸 Inst</a>
@@ -366,8 +402,6 @@ function App() {
                 <input className="input-field" placeholder="Район / Метро (например: Подол)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
                 <input className="input-field" placeholder="Теги через запятую" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
                 <input className="input-field" placeholder="Ссылка на картинку (URL)" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
-                
-                {/* 🛠 ВЕРНУЛ ПОЛЕ ДЛЯ ИНСТАГРАМА */}
                 <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
                 
                 <input className="input-field" placeholder="Ссылка на Google Maps (скопируй из браузера)" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />

@@ -1,8 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Чиним стандартные иконки Leaflet
+// Настройка дефолтных маркеров
 const customMarker = new L.Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -13,8 +12,14 @@ const customMarker = new L.Icon({
 });
 
 export default function MapView({ spots, onEditClick }) {
-  // Фильтруем только те заведения, у которых есть координаты
-  const spotsWithCoords = spots.filter(spot => spot.lat && spot.lng);
+  // 🛡 Бронебойный фильтр: убираем всё, что не является валидным числом, защищая Leaflet от падения
+  const spotsWithCoords = spots.filter(spot => 
+    spot &&
+    spot.lat !== undefined && spot.lng !== undefined &&
+    spot.lat !== null && spot.lng !== null &&
+    spot.lat !== '' && spot.lng !== '' &&
+    !isNaN(Number(spot.lat)) && !isNaN(Number(spot.lng))
+  );
 
   return (
     <div className="map-container-wrapper">
@@ -24,9 +29,9 @@ export default function MapView({ spots, onEditClick }) {
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
         {spotsWithCoords.map(spot => (
-          <Marker key={spot._id} position={[spot.lat, spot.lng]} icon={customMarker}>
+          <Marker key={spot._id} position={[parseFloat(spot.lat), parseFloat(spot.lng)]} icon={customMarker}>
             <Popup>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: 'center', color: '#c9d1d9' }}>
                 <h3 style={{ margin: '0 0 5px 0', color: '#58a6ff' }}>{spot.name}</h3>
                 <p style={{ margin: '0 0 10px 0' }}>{'⭐️'.repeat(spot.rating)}</p>
                 {spot.imageUrl && (
