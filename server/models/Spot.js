@@ -11,8 +11,11 @@ const spotSchema = new mongoose.Schema({
     googleMapsUrl: String,
     priceLevel: String,
     tags: [String],
-    // 👇 Делаем статус необязательным по умолчанию
-    status: { type: String, default: 'Без статуса' } 
+    status: { type: String, default: 'Без статуса' },
+    
+    // 🗺 ВАЖНО: Эти поля должны быть тут, иначе база не сохранит координаты!
+    lat: { type: Number },
+    lng: { type: Number }
 }, { 
     timestamps: true 
 });
