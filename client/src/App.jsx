@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView'; 
 import 'leaflet/dist/leaflet.css'; 
+import ImageUploader from './components/ImageUploader';
 import html2canvas from 'html2canvas';
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
@@ -471,8 +472,11 @@ function App() {
                 </div>
                 <input className="input-field" placeholder="Район / Метро (например: Подол)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
                 <input className="input-field" placeholder="Теги через запятую" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
-                <input className="input-field" placeholder="Ссылка на картинку (URL)" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
-                <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
+<ImageUploader 
+                  imageUrl={formData.imageUrl}
+                  onUploadSuccess={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+                  addLog={addLog}
+                />                <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
                 <input className="input-field" placeholder="Ссылка на Google Maps" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />
                 <div className="form-row" style={{ marginBottom: '12px' }}>
                   <input className="input-field" placeholder="Широта (lat)" value={formData.lat} onChange={e => setFormData({...formData, lat: e.target.value})} style={{ marginBottom: 0 }} />
