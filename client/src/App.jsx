@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView'; 
+import ImageUploader from './components/ImageUploader'; // 📸 Наш новый отдельный модуль загрузки
 import 'leaflet/dist/leaflet.css'; 
 import html2canvas from 'html2canvas';
 
@@ -278,7 +279,7 @@ function App() {
               <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На карте</button>
             </div>
             
-            {/* 🔐 ОТОБРАЖЕНИЕ КНОПОК АДМИНА / ГОСТЯ */}
+            {{/* 🔐 ОТОБРАЖЕНИЕ КНОПОК АДМИНА / ГОСТЯ */}}
             {isAdmin ? (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
@@ -328,7 +329,7 @@ function App() {
                 
                 <div className="card-actions">
                   <button className="action-btn story" onClick={() => setStorySpot(spot)} title="Сгенерировать Сторис">📲</button>
-                  {/* 🔐 СКРЫВАЕМ ПРАВКУ И УДАЛЕНИЕ ДЛЯ ГОСТЕЙ */}
+                  {{/* 🔐 СКРЫВАЕМ ПРАВКУ И УДАЛЕНИЕ ДЛЯ ГОСТЕЙ */}}
                   {isAdmin && (
                     <>
                       <button className="action-btn" onClick={() => handleEditClick(spot)} title="Редактировать">✏️</button>
@@ -384,7 +385,7 @@ function App() {
           <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} isAdmin={isAdmin} />
         )}
 
-        {/* 📸 МОДАЛКА ГЕНЕРАЦИИ СТОРИС */}
+        {{/* 📸 МОДАЛКА ГЕНЕРАЦИИ СТОРИС */}}
         {storySpot && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '15px', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '360px' }}>
@@ -438,7 +439,7 @@ function App() {
           </div>
         )}
 
-        {/* МОДАЛКА ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ */}
+        {{/* МОДАЛКА ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ */}}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '480px', border: '1px solid #30363d', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -471,7 +472,14 @@ function App() {
                 </div>
                 <input className="input-field" placeholder="Район / Метро (например: Подол)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
                 <input className="input-field" placeholder="Теги через запятую" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
-                <input className="input-field" placeholder="Ссылка на картинку (URL)" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                
+                {{/* 📸 ПОДКЛЮЧАЕМ НАШ НОВЫЙ ВЫНЕСЕННЫЙ МОДУЛЬ ЗАГРУЗКИ КАРТИНОК */}}
+                <ImageUploader 
+                  imageUrl={formData.imageUrl}
+                  onUploadSuccess={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+                  addLog={addLog}
+                />
+
                 <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
                 <input className="input-field" placeholder="Ссылка на Google Maps" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />
                 <div className="form-row" style={{ marginBottom: '12px' }}>
@@ -487,7 +495,7 @@ function App() {
           </div>
         )}
 
-        {/* 🔐 МОДАЛКА ЛОГИНА */}
+        {{/* 🔐 МОДАЛКА ЛОГИНА */}}
         {isLoginModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '320px', border: '1px solid #30363d' }}>
@@ -503,7 +511,7 @@ function App() {
           </div>
         )}
 
-        {/* ЛОГИ */}
+        {{/* ЛОГИ */}}
         <div style={{ position: 'fixed', bottom: '20px', right: '20px', width: '320px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.8)', zIndex: 1000, fontFamily: 'monospace' }}>
           <div onClick={() => setIsLogsOpen(!isLogsOpen)} style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: 'bold', borderBottom: isLogsOpen ? '1px solid #30363d' : 'none', fontSize: '14px' }}>
             <span>📜 Логи сервера</span>
