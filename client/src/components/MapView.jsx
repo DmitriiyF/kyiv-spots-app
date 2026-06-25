@@ -12,7 +12,7 @@ const markerIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-export default function MapView({ spots, onEditClick }) {
+export default function MapView({ spots, onEditClick, isAdmin }) {
   // Фильтруем заведения, у которых ТОЧНО есть валидные числа в координатах
   const spotsWithCoords = spots.filter(spot => 
     spot && 
@@ -53,7 +53,7 @@ export default function MapView({ spots, onEditClick }) {
           <Marker 
             key={spot._id} 
             position={[parseFloat(spot.lat), parseFloat(spot.lng)]} 
-            icon={markerIcon} // 🔥 Принудительно отдаем иконку КАЖДОМУ маркеру
+            icon={markerIcon} 
           >
             <Popup>
               <div style={{ textAlign: 'center', color: '#c9d1d9' }}>
@@ -66,12 +66,15 @@ export default function MapView({ spots, onEditClick }) {
                     style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px', marginBottom: '10px' }} 
                   />
                 )}
-                <button 
-                  onClick={() => onEditClick(spot)} 
-                  style={{ background: '#238636', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', width: '100%' }}
-                >
-                  Редактировать
-                </button>
+                {/* 🔐 КНОПКА РЕДАКТИРОВАНИЯ ТОЛЬКО ДЛЯ АДМИНА */}
+                {isAdmin && (
+                  <button 
+                    onClick={() => onEditClick(spot)} 
+                    style={{ background: '#238636', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', width: '100%' }}
+                  >
+                    Редактировать
+                  </button>
+                )}
               </div>
             </Popup>
           </Marker>

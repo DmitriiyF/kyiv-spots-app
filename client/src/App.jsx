@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView'; 
 import 'leaflet/dist/leaflet.css'; 
-import html2canvas from 'html2canvas'; // 📸 Наша новая магия для сторис
+import html2canvas from 'html2canvas';
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
@@ -32,8 +32,12 @@ function App() {
   const [editingSpotId, setEditingSpotId] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); 
   
-  // 📲 Стейт для генерации сторис
   const [storySpot, setStorySpot] = useState(null);
+
+  // 🔐 Стейты для админки
+  const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
@@ -79,10 +83,33 @@ function App() {
     setIsModalOpen(true);
   };
 
+  // 🔐 Получаем конфиг с токеном для запросов
+  const getConfig = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } });
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('/api/login', { password: passwordInput });
+      localStorage.setItem('adminToken', res.data.token);
+      setIsAdmin(true);
+      setIsLoginModalOpen(false);
+      setPasswordInput('');
+      addLog('✅ Вход выполнен', 'success');
+    } catch (err) {
+      addLog('❌ Неверный пароль', 'error');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setIsAdmin(false);
+    addLog('🔒 Выход из админки', 'info');
+  };
+
   const handleDeleteClick = async (id, name) => {
     if (!window.confirm(`Реально удалить "${name}" из базы?`)) return;
     try {
-      await axios.delete(`/api/spots/${id}`);
+      await axios.delete(`/api/spots/${id}`, getConfig());
       addLog(`Успешно удалено: "${name}"`, 'success');
       fetchSpots();
     } catch (error) {
@@ -110,12 +137,12 @@ function App() {
     
     if (editingSpotId) {
       try {
-        await axios.put(`/api/spots/${editingSpotId}`, payload);
+        await axios.put(`/api/spots/${editingSpotId}`, payload, getConfig());
         closeModal(); fetchSpots();
       } catch (error) { addLog(`Ошибка обновления`, 'error'); }
     } else {
       try {
-        await axios.post('/api/spots', payload);
+        await axios.post('/api/spots', payload, getConfig());
         closeModal(); fetchSpots();
       } catch (error) { addLog(`Ошибка добавления`, 'error'); }
     }
@@ -125,14 +152,12 @@ function App() {
     setIsModalOpen(false); setEditingSpotId(null); setFormData(initialFormState);
   };
 
-  // 📲 Функция склеивания и скачивания картинки
   const downloadStory = async () => {
     const element = document.getElementById('story-card-export');
     if (!element) return;
     
     addLog('Генерируем сторис...', 'info');
     try {
-      // scale: 2 делает картинку в 2 раза четче (Retina качество)
       const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: '#161b22' });
       const image = canvas.toDataURL("image/png");
       const link = document.createElement('a');
@@ -190,16 +215,12 @@ function App() {
         .action-btn.delete:hover { background: #da3637; color: white; border-color: #f85149; }
         .action-btn.story:hover { background: #a371f7; color: white; border-color: #d2a8ff; }
 
-/* Фото делаем выше (150px) */
         .spot-image { width: 100%; height: 150px; object-fit: cover; background: #21262d; }
         
-/* Убираем верхний отступ, так как бейджи теперь сами задают расстояние */
         .spot-content { padding: 0 10px 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
         
-        /* 🔥 Тянем бейджи отрицательным отступом вверх, чтобы они сели ровно на нижний край фото */
         .badge-row { position: relative; margin-top: -28px; margin-left: 10px; margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
         
-        /* Добавили тень (box-shadow) бейджам, чтобы они не сливались со светлыми фотками */
         .spot-tag { background: #238636; color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .status-tag { background: #161b22; border: 1px solid #30363d; color: #8b949e; padding: 3px 8px; border-radius: 6px; font-size: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
@@ -215,7 +236,7 @@ function App() {
         .spot-review { margin: 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
         .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #30363d; }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
-/* 🗺 ВОТ ЭТИ СТИЛИ ДЛЯ КАРТЫ ПРОПАЛИ */
+        
         .map-container-wrapper { height: 600px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
         .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
         .leaflet-popup-tip { background: #161b22; border: 1px solid #30363d; }
@@ -256,7 +277,17 @@ function App() {
               <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
               <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На карте</button>
             </div>
-            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
+            
+            {/* 🔐 ОТОБРАЖЕНИЕ КНОПОК АДМИНА / ГОСТЯ */}
+            {isAdmin ? (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
+                <button className="btn-primary" style={{ background: '#da3637', padding: '10px' }} onClick={handleLogout} title="Выйти">🚪</button>
+              </div>
+            ) : (
+              <button className="btn-primary" style={{ background: 'transparent', border: '1px solid #30363d', color: '#8b949e', padding: '10px' }} onClick={() => setIsLoginModalOpen(true)} title="Вход для админа">🔐</button>
+            )}
+            
           </div>
         </header>
 
@@ -296,10 +327,14 @@ function App() {
               <div key={spot._id} className="spot-card">
                 
                 <div className="card-actions">
-                  {/* 📲 НОВАЯ КНОПКА СТОРИС */}
                   <button className="action-btn story" onClick={() => setStorySpot(spot)} title="Сгенерировать Сторис">📲</button>
-                  <button className="action-btn" onClick={() => handleEditClick(spot)} title="Редактировать">✏️</button>
-                  <button className="action-btn delete" onClick={() => handleDeleteClick(spot._id, spot.name)} title="Удалить">🗑</button>
+                  {/* 🔐 СКРЫВАЕМ ПРАВКУ И УДАЛЕНИЕ ДЛЯ ГОСТЕЙ */}
+                  {isAdmin && (
+                    <>
+                      <button className="action-btn" onClick={() => handleEditClick(spot)} title="Редактировать">✏️</button>
+                      <button className="action-btn delete" onClick={() => handleDeleteClick(spot._id, spot.name)} title="Удалить">🗑</button>
+                    </>
+                  )}
                 </div>
 
                 {spot.imageUrl ? (
@@ -330,22 +365,23 @@ function App() {
                   )}
                   {spot.review && <p className="spot-review">{spot.review}</p>}
                   <div className="links-row">
-{spot.instagramUrl && (
-  <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ display: 'flex', alignItems: 'center' }} title="Перейти в Instagram">
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-    </svg>
-  </a>
-)}                    {spot.googleMapsUrl && <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>}
+                    {spot.instagramUrl && (
+                      <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ display: 'flex', alignItems: 'center' }} title="Перейти в Instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                          <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                        </svg>
+                      </a>
+                    )}                    
+                    {spot.googleMapsUrl && <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} />
+          <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} isAdmin={isAdmin} />
         )}
 
         {/* 📸 МОДАЛКА ГЕНЕРАЦИИ СТОРИС */}
@@ -356,26 +392,23 @@ function App() {
               <button onClick={() => setStorySpot(null)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '32px', cursor: 'pointer', lineHeight: '20px' }}>×</button>
             </div>
 
-            {/* ЭТОТ БЛОК БУДЕТ СКОПИРОВАН СКРИПТОМ */}
             <div id="story-card-export" style={{ width: '360px', height: '640px', backgroundColor: '#161b22', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'sans-serif', border: '1px solid #30363d' }}>
               
-      <div style={{ height: '55%', width: '100%', position: 'relative' }}>
+              <div style={{ height: '55%', width: '100%', position: 'relative' }}>
                 {storySpot.imageUrl ? (
                   <img src={`https://wsrv.nl/?url=${encodeURIComponent(storySpot.imageUrl)}`} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="bg" />
                 ) : (
                   <div style={{ width: '100%', height: '100%', background: '#21262d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Без фото</div>
                 )}
-{/* Градиент для красивого перехода к тексту */}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to bottom, transparent, #161b22)' }}></div>
                 
-                {/* 🔥 Бейджи теперь привязаны к низу ФОТОГРАФИИ */}
                 <div style={{ position: 'absolute', bottom: '15px', left: '24px', display: 'flex', gap: '8px', zIndex: 20 }}>
                   <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{storySpot.category}</span>
                   <span style={{ background: '#21262d', color: '#8b949e', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', border: '1px solid #30363d', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{storySpot.priceLevel}</span>
                 </div>
               </div>
 
-<div style={{ padding: '30px 24px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '-30px', zIndex: 10 }}>
+              <div style={{ padding: '30px 24px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '-30px', zIndex: 10 }}>
                 <h1 style={{ margin: '0 0 8px 0', color: '#f0f6fc', fontSize: '32px', lineHeight: 1.1 }}>{storySpot.name}</h1>
                 
                 {storySpot.location && (
@@ -449,6 +482,22 @@ function App() {
                 <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '16px' }}>
                   {editingSpotId ? 'Сохранить изменения' : 'Сохранить в базу'}
                 </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* 🔐 МОДАЛКА ЛОГИНА */}
+        {isLoginModalOpen && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000, padding: '15px' }}>
+            <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '320px', border: '1px solid #30363d' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Вход для админа</h2>
+                <button onClick={() => setIsLoginModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
+              </div>
+              <form onSubmit={handleLogin}>
+                <input type="password" placeholder="Пароль" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} className="input-field" autoFocus required />
+                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Войти</button>
               </form>
             </div>
           </div>
