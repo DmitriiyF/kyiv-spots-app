@@ -35,7 +35,6 @@ function App() {
   const [viewMode, setViewMode] = useState('grid'); 
   
   const [storySpot, setStorySpot] = useState(null);
-  const [storySpot, setStorySpot] = useState(null);
   const [detailedSpot, setDetailedSpot] = useState(null); // 🔍 Стейт для деталки
   // 🔐 Стейты для админки
   const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
