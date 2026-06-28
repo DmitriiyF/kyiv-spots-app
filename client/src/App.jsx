@@ -4,6 +4,7 @@ import MapView from './components/MapView';
 import 'leaflet/dist/leaflet.css'; 
 import ImageUploader from './components/ImageUploader';
 import html2canvas from 'html2canvas';
+import SpotDetailsModal from './components/SpotDetailsModal';
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
@@ -34,7 +35,8 @@ function App() {
   const [viewMode, setViewMode] = useState('grid'); 
   
   const [storySpot, setStorySpot] = useState(null);
-
+  const [storySpot, setStorySpot] = useState(null);
+  const [detailedSpot, setDetailedSpot] = useState(null); // 🔍 Стейт для деталки
   // 🔐 Стейты для админки
   const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -338,10 +340,10 @@ function App() {
                   )}
                 </div>
 
-                {spot.imageUrl ? (
-                  <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
+              {spot.imageUrl ? (
+                  <img src={spot.imageUrl} alt={spot.name} className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальнее" />
                 ) : (
-                  <div className="spot-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>Нет фото</div>
+                  <div className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальнее">Нет фото</div>
                 )}
                 <div className="spot-content">
                   <div className="badge-row">
@@ -523,7 +525,8 @@ function App() {
             </div>
           )}
         </div>
-
+{/* 🔍 МОДАЛКА ДЕТАЛЕЙ ЗАВЕДЕНИЯ */}
+        <SpotDetailsModal spot={detailedSpot} onClose={() => setDetailedSpot(null)} />
       </div>
     </>
   );
