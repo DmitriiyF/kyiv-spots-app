@@ -1,23 +1,24 @@
 import mongoose from 'mongoose';
 
-const spotSchema = new mongoose.Schema({
+const SpotSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    category: { type: String, required: true },
-    rating: { type: Number, required: true },
-    review: String,
-    imageUrl: String,
-    instagramUrl: String,
-    location: String,
-    googleMapsUrl: String,
-    priceLevel: String,
+    category: { type: String },
+    rating: { type: Number, default: 5 },
+    review: { type: String },
+    imageUrl: { type: String },
+    instagramUrl: { type: String },
+    location: { type: String },
+    googleMapsUrl: { type: String },
+    priceLevel: { type: String },
     tags: [String],
-    status: { type: String, default: 'Без статуса' },
-    
-    // 🗺 ВАЖНО: Эти поля должны быть тут, иначе база не сохранит координаты!
+    status: { type: String },
     lat: { type: Number },
-    lng: { type: Number }
-}, { 
-    timestamps: true 
-});
+    lng: { type: Number },
+    
+    // 🔥 НОВЫЕ ПОЛЯ:
+    vibe: { type: String },
+    mustTry: { type: String },
+    gallery: [{ type: String }] // Массив ссылок для галереи
+}, { timestamps: true });
 
-export default mongoose.model('Spot', spotSchema);
+export default mongoose.model('Spot', SpotSchema);
