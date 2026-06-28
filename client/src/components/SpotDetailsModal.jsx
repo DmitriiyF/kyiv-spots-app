@@ -65,7 +65,7 @@ export default function SpotDetailsModal({ spot, onClose }) {
           <div>
             <h2 style={{ margin: '0 0 10px 0', color: '#f0f6fc', fontSize: '32px', lineHeight: '1.1' }}>{spot.name}</h2>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>{'⭐️'.repeat(spot.rating)}</span>
+              {spot.rating && <span style={{ fontSize: '18px' }}>{'⭐️'.repeat(spot.rating)}</span>}
               {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
                 <span style={{ background: '#161b22', border: `1px solid ${spot.status === 'Хочу сходить' ? '#388bfd' : '#30363d'}`, color: spot.status === 'Хочу сходить' ? '#58a6ff' : '#8b949e', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold' }}>
                   {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}

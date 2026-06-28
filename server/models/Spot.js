@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const SpotSchema = new mongoose.Schema({
     name: { type: String, required: true },
     category: { type: String },
-    rating: { type: Number, default: 5 },
+    rating: { type: Number, default: null }, // Теперь рейтинг может быть пустым
     review: { type: String },
     imageUrl: { type: String },
     instagramUrl: { type: String },

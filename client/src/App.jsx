@@ -14,7 +14,7 @@ const STATUSES = ['Без статуса', 'Уже был', 'Хочу сходи
 
 // 🔥 Добавили vibe, mustTry и gallery в начальное состояние формы
 const initialFormState = {
-  name: '', category: 'Кофейня', rating: 5, review: '', imageUrl: '', instagramUrl: '',
+  name: '', category: 'Кофейня', rating: '', review: '', imageUrl: '', instagramUrl: '',
   location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статуса', lat: '', lng: '',
   vibe: '', mustTry: '', gallery: []
 };
@@ -359,7 +359,7 @@ function App() {
                     <span className="spot-price">{spot.priceLevel}</span>
                   </div>
                   {spot.location && <p className="spot-location">📍 {spot.location}</p>}
-                  <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p>
+                  {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : <p className="spot-rating" style={{ color: '#8b949e', fontSize: '12px' }}>Без оценки</p>}
                   
                   {spot.tags && spot.tags.length > 0 && (
                     <div className="mini-tags-container">
@@ -459,9 +459,17 @@ function App() {
                   </select>
                 </div>
                 <div className="form-row">
-                  <div style={{ flex: 1 }}>
+<div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Оценка (1-5)</label>
-                    <input className="input-field" type="number" min="1" max="5" value={formData.rating} onChange={e => setFormData({...formData, rating: e.target.value})} />
+                    <input 
+                      className="input-field" 
+                      type="number" 
+                      min="1" 
+                      max="5" 
+                      placeholder="?"
+                      value={formData.rating} 
+                      onChange={e => setFormData({...formData, rating: e.target.value})} 
+                    />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Уровень цен</label>
