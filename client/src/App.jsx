@@ -91,6 +91,19 @@ function App() {
 
   const getConfig = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } });
 
+  // Достаем настоящую причину ошибки, а не голое error.message
+  const describeError = (error) => {
+    const status = error.response?.status;
+    const serverMsg = error.response?.data?.error || error.response?.data?.message;
+    if (status === 401) {
+      localStorage.removeItem('adminToken');
+      setIsAdmin(false);
+      setIsLoginModalOpen(true);
+      return 'Сессия админа истекла — войди заново';
+    }
+    return serverMsg ? `${status}: ${serverMsg}` : error.message;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -118,7 +131,7 @@ function App() {
       addLog(`Успешно удалено: "${name}"`, 'success');
       fetchSpots();
     } catch (error) {
-      addLog(`Ошибка удаления: ${error.message}`, 'error');
+      addLog(`Ошибка удаления: ${describeError(error)}`, 'error');
     }
   };
 
@@ -144,12 +157,18 @@ function App() {
       try {
         await axios.put(`/api/spots/${editingSpotId}`, payload, getConfig());
         closeModal(); fetchSpots();
-      } catch (error) { addLog(`Ошибка обновления`, 'error'); }
+      } catch (error) {
+        setIsLogsOpen(true);
+        addLog(`Ошибка обновления — ${describeError(error)}`, 'error');
+      }
     } else {
       try {
         await axios.post('/api/spots', payload, getConfig());
         closeModal(); fetchSpots();
-      } catch (error) { addLog(`Ошибка добавления`, 'error'); }
+      } catch (error) {
+        setIsLogsOpen(true);
+        addLog(`Ошибка добавления — ${describeError(error)}`, 'error');
+      }
     }
   };
 

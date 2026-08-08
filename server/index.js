@@ -66,7 +66,7 @@ app.post('/api/spots', verifyAdmin, async (req, res) => {
         res.json(newSpot);
     } catch (err) {
         console.error("❌ ОШИБКА СОХРАНЕНИЯ:", err.message);
-        res.status(500).json({ error: "Ошибка при сохранении" });
+        res.status(500).json({ error: `Ошибка при сохранении: ${err.message}` });
     }
 });
 
