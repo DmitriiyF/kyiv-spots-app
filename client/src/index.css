@@ -9,3 +9,8 @@ body {
   width: 100%;
   box-sizing: border-box;
 }
+
+/* Dark mode map tiles via CSS filter */
+.map-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
