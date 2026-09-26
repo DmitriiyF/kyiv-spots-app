@@ -360,12 +360,16 @@ function App() {
         .view-btn.active { background: #30363d; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
         @media (min-width: 768px) {
-          .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; gap: 24px; padding: 20px 0; }
-          .home-grid-container { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+          .grid-container { grid-template-columns: repeat(3, 1fr) !important; gap: 20px; padding: 20px 0; }
+          .home-grid-container { grid-template-columns: repeat(3, 1fr); gap: 16px; }
           .spot-image-wrapper { height: 220px; }
           .spot-title { font-size: 20px; }
           .spot-price { font-size: 15px; }
           .spot-location { font-size: 14px; }
+        }
+        @media (min-width: 1024px) {
+          .grid-container { grid-template-columns: repeat(5, 1fr) !important; gap: 24px; }
+          .home-grid-container { grid-template-columns: repeat(5, 1fr); gap: 20px; }
         }
 
         .btn-primary { background: #58a6ff; color: #0d1117; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
