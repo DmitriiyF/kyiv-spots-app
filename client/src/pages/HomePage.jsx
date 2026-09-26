@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const HomePage = ({ spots }) => {
+const HomePage = ({ spots, siteSettings }) => {
   const topSpots = [...spots]
     .filter(s => s.imageUrl)
     .sort((a, b) => b.rating - a.rating)
@@ -11,7 +11,9 @@ const HomePage = ({ spots }) => {
     <div style={{ padding: '0 4%' }}>
       {/* HERO SECTION */}
       <div style={{ 
-        background: 'linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1))', 
+        background: siteSettings?.bannerUrl ? `linear-gradient(rgba(13, 17, 23, 0.7), rgba(13, 17, 23, 0.8)), url(${siteSettings.bannerUrl})` : 'linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1))', 
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         borderRadius: '24px', 
         padding: '60px 40px', 
         textAlign: 'center', 
@@ -20,13 +22,17 @@ const HomePage = ({ spots }) => {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        <div style={{ position: 'absolute', top: '-50%', left: '-10%', width: '300px', height: '300px', background: 'rgba(88, 166, 255, 0.2)', filter: 'blur(80px)', borderRadius: '50%' }}></div>
-        <div style={{ position: 'absolute', bottom: '-50%', right: '-10%', width: '300px', height: '300px', background: 'rgba(163, 113, 247, 0.2)', filter: 'blur(80px)', borderRadius: '50%' }}></div>
+        {!siteSettings?.bannerUrl && (
+          <>
+            <div style={{ position: 'absolute', top: '-50%', left: '-10%', width: '300px', height: '300px', background: 'rgba(88, 166, 255, 0.2)', filter: 'blur(80px)', borderRadius: '50%' }}></div>
+            <div style={{ position: 'absolute', bottom: '-50%', right: '-10%', width: '300px', height: '300px', background: 'rgba(163, 113, 247, 0.2)', filter: 'blur(80px)', borderRadius: '50%' }}></div>
+          </>
+        )}
 
-        <h1 style={{ fontSize: '48px', color: '#f0f6fc', marginBottom: '20px', fontWeight: 800, letterSpacing: '-1px', position: 'relative', zIndex: 1 }}>
+        <h1 style={{ fontSize: '48px', color: '#f0f6fc', marginBottom: '20px', fontWeight: 800, letterSpacing: '-1px', position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 10px rgba(0,0,0,0.8)' : 'none' }}>
           Где провести время в Киеве? 🇺🇦
         </h1>
-        <p style={{ fontSize: '18px', color: '#8b949e', maxWidth: '600px', margin: '0 auto 30px', lineHeight: 1.6, position: 'relative', zIndex: 1 }}>
+        <p style={{ fontSize: '18px', color: '#c9d1d9', maxWidth: '600px', margin: '0 auto 30px', lineHeight: 1.6, position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 5px rgba(0,0,0,0.8)' : 'none' }}>
           Мы собрали лучшие заведения столицы — от уютных кофеен до топовых ресторанов и баров. Находи новые места, смотри отзывы и строй маршруты.
         </p>
         <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '18px', padding: '15px 30px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>

@@ -52,6 +52,8 @@ function App() {
   const [sortBy, setSortBy] = useState('newest');
 
   const [formData, setFormData] = useState(initialFormState);
+  const [siteSettings, setSiteSettings] = useState({ logoUrl: '', bannerUrl: '' });
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const location = useLocation();
 
@@ -70,8 +72,18 @@ function App() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const res = await axios.get('/api/settings');
+      if (res.data) setSiteSettings({ logoUrl: res.data.logoUrl || '', bannerUrl: res.data.bannerUrl || '' });
+    } catch (error) {
+      addLog(`Ошибка загрузки настроек: ${error.message}`, 'error');
+    }
+  };
+
   useEffect(() => {
     fetchSpots();
+    fetchSettings();
   }, []);
 
   const handleEditClick = (spot) => {
@@ -126,6 +138,18 @@ function App() {
     localStorage.removeItem('adminToken');
     setIsAdmin(false);
     addLog('🔒 Выход из админки', 'info');
+  };
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('/api/settings', siteSettings, getConfig());
+      setSiteSettings(res.data);
+      addLog('✅ Настройки сохранены', 'success');
+      setIsSettingsModalOpen(false);
+    } catch (error) {
+      addLog(`Ошибка сохранения настроек: ${describeError(error)}`, 'error');
+    }
   };
 
   const handleDeleteClick = async (id, name) => {
@@ -320,8 +344,11 @@ function App() {
       {/* NAVBAR */}
       <header className="navbar">
         <Link to="/" className="nav-logo">
-          {/* Иконка-заглушка вместо логотипа */}
-          <div style={{ background: 'linear-gradient(135deg, #58a6ff, #a371f7)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>K</div>
+          {siteSettings.logoUrl ? (
+            <img src={siteSettings.logoUrl} alt="Kyiv Spots Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ background: 'linear-gradient(135deg, #58a6ff, #a371f7)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>K</div>
+          )}
           <h1>Kyiv Spots</h1>
         </Link>
         
@@ -332,6 +359,7 @@ function App() {
           {isAdmin ? (
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '10px' }}>
               <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
+              <button className="btn-primary" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b949e', padding: '10px', boxShadow: 'none' }} onClick={() => setIsSettingsModalOpen(true)} title="Настройки сайта">⚙️</button>
               <button className="btn-primary" style={{ background: 'rgba(218, 54, 55, 0.1)', color: '#ff7b72', border: '1px solid rgba(218, 54, 55, 0.2)', padding: '10px', boxShadow: 'none' }} onClick={handleLogout} title="Выйти">🚪</button>
             </div>
           ) : (
@@ -341,7 +369,7 @@ function App() {
       </header>
 
       <Routes>
-        <Route path="/" element={<HomePage spots={spots} />} />
+        <Route path="/" element={<HomePage spots={spots} siteSettings={siteSettings} />} />
         
         <Route path="/spots" element={
           <div style={{ padding: '0 4%' }}>
@@ -590,6 +618,39 @@ function App() {
                 <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '16px' }}>
                   {editingSpotId ? 'Сохранить изменения' : 'Сохранить в базу'}
                 </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {isSettingsModalOpen && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000, padding: '15px' }}>
+            <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '400px', border: '1px solid #30363d' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Настройки сайта</h2>
+                <button onClick={() => setIsSettingsModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
+              </div>
+              <form onSubmit={handleSaveSettings}>
+                
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Логотип (вместо "K"):</label>
+                  <ImageUploader 
+                    imageUrl={siteSettings.logoUrl}
+                    onUploadSuccess={(url) => setSiteSettings(prev => ({ ...prev, logoUrl: url }))}
+                    addLog={addLog}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Баннер Главной (градиент исчезнет):</label>
+                  <ImageUploader 
+                    imageUrl={siteSettings.bannerUrl}
+                    onUploadSuccess={(url) => setSiteSettings(prev => ({ ...prev, bannerUrl: url }))}
+                    addLog={addLog}
+                  />
+                </div>
+
+                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Сохранить настройки</button>
               </form>
             </div>
           </div>

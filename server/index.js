@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import Spot from './models/Spot.js';
+import Settings from './models/Settings.js';
 import jwt from 'jsonwebtoken';
 
 dotenv.config();
@@ -89,6 +90,36 @@ app.put('/api/spots/:id', verifyAdmin, async (req, res) => {
     } catch (err) {
         console.error("❌ ОШИБКА ОБНОВЛЕНИЯ:", err.message);
         res.status(500).json({ error: "Ошибка при обновлении" });
+    }
+});
+
+// ⚙️ ПОЛУЧИТЬ НАСТРОЙКИ (лого и баннер)
+app.get('/api/settings', async (req, res) => {
+    try {
+        let settings = await Settings.findOne();
+        if (!settings) {
+            settings = await Settings.create({ logoUrl: '', bannerUrl: '' });
+        }
+        res.json(settings);
+    } catch (err) {
+        res.status(500).json({ error: "Ошибка при получении настроек" });
+    }
+});
+
+// ⚙️ ОБНОВИТЬ НАСТРОЙКИ (🔒 ТОЛЬКО АДМИН)
+app.post('/api/settings', verifyAdmin, async (req, res) => {
+    try {
+        let settings = await Settings.findOne();
+        if (!settings) {
+            settings = new Settings(req.body);
+        } else {
+            settings.logoUrl = req.body.logoUrl !== undefined ? req.body.logoUrl : settings.logoUrl;
+            settings.bannerUrl = req.body.bannerUrl !== undefined ? req.body.bannerUrl : settings.bannerUrl;
+        }
+        await settings.save();
+        res.json(settings);
+    } catch (err) {
+        res.status(500).json({ error: "Ошибка при обновлении настроек" });
     }
 });
 
