@@ -343,13 +343,15 @@ function App() {
 
       {/* NAVBAR */}
       <header className="navbar">
-        <Link to="/" className="nav-logo">
+        <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center' }}>
           {siteSettings.logoUrl ? (
-            <img src={siteSettings.logoUrl} alt="Kyiv Spots Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
+            <img src={siteSettings.logoUrl} alt="Kyiv Spots" style={{ height: '48px', width: 'auto', objectFit: 'contain', borderRadius: '8px' }} />
           ) : (
-            <div style={{ background: 'linear-gradient(135deg, #58a6ff, #a371f7)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>K</div>
+            <>
+              <div style={{ background: 'linear-gradient(135deg, #58a6ff, #a371f7)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>K</div>
+              <h1>Kyiv Spots</h1>
+            </>
           )}
-          <h1>Kyiv Spots</h1>
         </Link>
         
         <div className="nav-links">
