@@ -41,23 +41,26 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
         <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: '#c9d1d9', maxWidth: '600px', margin: '0 0 25px 0', lineHeight: 1.6, position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 5px rgba(0,0,0,0.8)' : 'none' }}>
           Я зібрав кращі заклади столиці — від затишних кав'ярень до топових ресторанів і барів.
         </p>
-        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-          <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '16px', padding: '12px 24px', textDecoration: 'none' }}>
-            Дивитись всі заклади
-          </Link>
-          <button className="btn-primary" style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '16px', padding: '12px 24px' }} onClick={() => {
-            const highRatedSpots = spots.filter(s => s.rating >= 4);
-            const pool = highRatedSpots.length > 0 ? highRatedSpots : spots;
-            if (pool.length > 0) {
-              const randomSpot = pool[Math.floor(Math.random() * pool.length)];
-              onSpotClick && onSpotClick(randomSpot);
-            } else {
-              alert("Немає закладів для вибору!");
-            }
-          }}>
-            🎲 Мені пощастить
-          </button>
-        </div>
+        <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '16px', padding: '12px 24px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
+          Дивитись всі заклади
+        </Link>
+      </div>
+
+      {/* RANDOM SPOT SECTION */}
+      <div style={{ marginBottom: '50px', background: 'linear-gradient(135deg, rgba(88, 166, 255, 0.05), rgba(163, 113, 247, 0.05))', padding: '30px', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🎲</div>
+        <h2 style={{ fontSize: '24px', color: '#f0f6fc', margin: '0 0 10px 0' }}>Не знаєте куди піти?</h2>
+        <p style={{ color: '#8b949e', margin: '0 0 20px 0', maxWidth: '400px', lineHeight: '1.5' }}>Довіртесь випадковості! Ми оберемо для вас заклад з нашої бази.</p>
+        <button className="btn-primary" style={{ fontSize: '16px', padding: '12px 30px', background: 'rgba(163, 113, 247, 0.15)', color: '#d2a8ff', border: '1px solid rgba(163, 113, 247, 0.3)' }} onClick={() => {
+          if (spots.length > 0) {
+            const randomSpot = spots[Math.floor(Math.random() * spots.length)];
+            onSpotClick && onSpotClick(randomSpot);
+          } else {
+            alert("Немає закладів для вибору!");
+          }
+        }}>
+          Обрати рандомний заклад
+        </button>
       </div>
 
       {/* TOP SPOTS */}
