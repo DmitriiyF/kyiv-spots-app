@@ -516,13 +516,13 @@ function App() {
                               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                               <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                             </svg>
-                            <span>Instagram</span>
+                            <span>Insta</span>
                           </a>
                         )}                    
                         {spot.googleMapsUrl && (
                           <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="spot-link maps">
                             <span style={{ fontSize: '16px', flexShrink: 0 }}>🗺</span>
-                            <span>Маршрут</span>
+                            <span>Мапа</span>
                           </a>
                         )}
                       </div>
