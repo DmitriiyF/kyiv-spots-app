@@ -46,20 +46,46 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
         </Link>
       </div>
 
-      {/* RANDOM SPOT SECTION */}
-      <div style={{ marginBottom: '50px', background: 'linear-gradient(135deg, rgba(88, 166, 255, 0.05), rgba(163, 113, 247, 0.05))', padding: '30px', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🎲</div>
-        <h2 style={{ fontSize: '24px', color: '#f0f6fc', margin: '0 0 10px 0' }}>Не знаєте куди піти?</h2>
-        <p style={{ color: '#8b949e', margin: '0 0 20px 0', maxWidth: '400px', lineHeight: '1.5' }}>Довіртесь випадковості! Ми оберемо для вас заклад з нашої бази.</p>
-        <button className="btn-primary" style={{ fontSize: '16px', padding: '12px 30px', background: 'rgba(163, 113, 247, 0.15)', color: '#d2a8ff', border: '1px solid rgba(163, 113, 247, 0.3)' }} onClick={() => {
-          if (spots.length > 0) {
-            const randomSpot = spots[Math.floor(Math.random() * spots.length)];
-            onSpotClick && onSpotClick(randomSpot);
-          } else {
-            alert("Немає закладів для вибору!");
-          }
-        }}>
-          Обрати рандомний заклад
+      {/* WIDGET CUBE: RANDOM SPOT */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
+        <button 
+          onClick={() => {
+            if (spots.length > 0) {
+              const randomSpot = spots[Math.floor(Math.random() * spots.length)];
+              onSpotClick && onSpotClick(randomSpot);
+            } else {
+              alert("Немає закладів для вибору!");
+            }
+          }}
+          style={{ 
+            width: '140px', 
+            height: '140px', 
+            background: 'linear-gradient(135deg, rgba(30, 35, 45, 0.8), rgba(20, 24, 32, 0.9))', 
+            border: '1px solid #30363d', 
+            borderRadius: '24px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            cursor: 'pointer',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+            transition: 'transform 0.2s',
+            backdropFilter: 'blur(8px)'
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.5)';
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.borderColor = '#30363d';
+          }}
+        >
+          <div style={{ fontSize: '42px', marginBottom: '10px' }}>🎲</div>
+          <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f0f6fc', marginBottom: '4px' }}>Рандом</div>
+          <div style={{ fontSize: '11px', textAlign: 'center', color: '#8b949e', lineHeight: '1.2', padding: '0 10px' }}>
+            Клікни, щоб<br/>обрати випадково
+          </div>
         </button>
       </div>
 
