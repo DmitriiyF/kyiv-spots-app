@@ -267,7 +267,7 @@ function App() {
   return (
     <>
       <style>{`
-        html, body, #root { max-width: 100vw; overflow-x: hidden; }
+        html, body, #root { max-width: 100vw; overflow-x: clip; }
         body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; -ms-overflow-style: none; scrollbar-width: none; }
         body::-webkit-scrollbar { display: none; }
         ::-webkit-scrollbar { display: none; }
@@ -276,10 +276,12 @@ function App() {
         /* Modern Glassmorphism NavBar */
         .navbar {
           position: sticky; top: 0; z-index: 1000;
-          background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+          background: rgba(13, 17, 23, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
           padding: 15px 4%; display: flex; justify-content: space-between; align-items: center;
           flex-wrap: wrap; gap: 10px;
           margin-bottom: 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         .nav-logo {
           display: flex; align-items: center; gap: 10px; text-decoration: none;
