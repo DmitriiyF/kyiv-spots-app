@@ -289,7 +289,7 @@ function App() {
         .nav-link { color: #8b949e; text-decoration: none; font-weight: 600; font-size: clamp(14px, 4vw, 16px); transition: color 0.2s; }
         .nav-link:hover, .nav-link.active { color: #f0f6fc; }
 
-        .filters-container { background: rgba(22, 27, 34, 0.5); backdrop-filter: blur(8px); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .filters-container { margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
         .filters-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .categories-scroll::-webkit-scrollbar { display: none; }
