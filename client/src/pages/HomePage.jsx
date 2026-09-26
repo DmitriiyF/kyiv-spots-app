@@ -41,9 +41,23 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
         <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: '#c9d1d9', maxWidth: '600px', margin: '0 0 25px 0', lineHeight: 1.6, position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 5px rgba(0,0,0,0.8)' : 'none' }}>
           Я зібрав кращі заклади столиці — від затишних кав'ярень до топових ресторанів і барів.
         </p>
-        <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '16px', padding: '12px 24px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
-          Дивитись всі заклади
-        </Link>
+        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '16px', padding: '12px 24px', textDecoration: 'none' }}>
+            Дивитись всі заклади
+          </Link>
+          <button className="btn-primary" style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '16px', padding: '12px 24px' }} onClick={() => {
+            const highRatedSpots = spots.filter(s => s.rating >= 4);
+            const pool = highRatedSpots.length > 0 ? highRatedSpots : spots;
+            if (pool.length > 0) {
+              const randomSpot = pool[Math.floor(Math.random() * pool.length)];
+              onSpotClick && onSpotClick(randomSpot);
+            } else {
+              alert("Немає закладів для вибору!");
+            }
+          }}>
+            🎲 Мені пощастить
+          </button>
+        </div>
       </div>
 
       {/* TOP SPOTS */}
