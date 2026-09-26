@@ -335,9 +335,14 @@ function App() {
         .mini-tag { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #8b949e; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
 
         .spot-review { margin: 4px 0 0 0; font-size: 13px; color: #c9d1d9; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
-        .links-row { display: flex; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .spot-link { color: #58a6ff; text-decoration: none; font-size: 13px; font-weight: 600; transition: color 0.2s; }
-        .spot-link:hover { color: #79c0ff; }
+        
+        .links-row { display: flex; gap: 8px; margin-top: auto; padding-top: 16px; }
+        .spot-link { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+        .spot-link:hover { transform: translateY(-2px); }
+        .spot-link.instagram { color: #d2a8ff; background: rgba(163, 113, 247, 0.1); border-color: rgba(163, 113, 247, 0.2); }
+        .spot-link.instagram:hover { background: rgba(163, 113, 247, 0.2); box-shadow: 0 4px 12px rgba(163, 113, 247, 0.15); }
+        .spot-link.maps { color: #ffb86c; background: rgba(255, 184, 108, 0.1); border-color: rgba(255, 184, 108, 0.2); }
+        .spot-link.maps:hover { background: rgba(255, 184, 108, 0.2); box-shadow: 0 4px 12px rgba(255, 184, 108, 0.15); }
         
         .map-container-wrapper { height: 600px; width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
         .leaflet-popup-content-wrapper { background: rgba(22, 27, 34, 0.95) !important; backdrop-filter: blur(8px); color: #c9d1d9 !important; border: 1px solid #30363d !important; border-radius: 12px !important; }
@@ -494,15 +499,20 @@ function App() {
                       {spot.review && <p className="spot-review">"{spot.review}"</p>}
                       <div className="links-row">
                         {spot.instagramUrl && (
-                          <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }} title="Перейти в Instagram">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link instagram" onClick={(e) => e.stopPropagation()} title="Перейти в Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
                               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                               <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                             </svg>
+                            Instagram
                           </a>
                         )}                    
-                        {spot.googleMapsUrl && <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>}
+                        {spot.googleMapsUrl && (
+                          <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="spot-link maps">
+                            🗺 Маршрут
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
