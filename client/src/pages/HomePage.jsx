@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const HomePage = ({ spots, siteSettings, onSpotClick }) => {
+  const [isRandomOpen, setIsRandomOpen] = useState(false);
   const topSpots = [...spots]
     .filter(s => s.imageUrl)
     .sort((a, b) => b.rating - a.rating)
@@ -46,47 +47,78 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
         </Link>
       </div>
 
-      {/* WIDGET CUBE: RANDOM SPOT */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-        <button 
-          onClick={() => {
-            if (spots.length > 0) {
-              const randomSpot = spots[Math.floor(Math.random() * spots.length)];
-              onSpotClick && onSpotClick(randomSpot);
-            } else {
-              alert("Немає закладів для вибору!");
-            }
-          }}
+      {/* FLOATING RANDOM WIDGET */}
+      <div 
+        style={{ 
+          position: 'fixed', 
+          right: isRandomOpen ? '0' : '-160px', 
+          top: '50%', 
+          transform: 'translateY(-50%)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          zIndex: 1000,
+          transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        {/* Toggle Tab */}
+        <div 
+          onClick={() => setIsRandomOpen(!isRandomOpen)}
           style={{ 
-            width: '140px', 
-            height: '140px', 
-            background: 'linear-gradient(135deg, rgba(30, 35, 45, 0.8), rgba(20, 24, 32, 0.9))', 
-            border: '1px solid #30363d', 
-            borderRadius: '24px', 
+            width: '40px', 
+            height: '60px', 
+            background: 'linear-gradient(135deg, rgba(30, 35, 45, 0.95), rgba(20, 24, 32, 0.95))', 
+            border: '1px solid rgba(163, 113, 247, 0.4)', 
+            borderRight: 'none',
+            borderRadius: '20px 0 0 20px', 
             display: 'flex', 
-            flexDirection: 'column', 
             alignItems: 'center', 
             justifyContent: 'center', 
             cursor: 'pointer',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
-            transition: 'transform 0.2s',
-            backdropFilter: 'blur(8px)'
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.5)';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.transform = 'none';
-            e.currentTarget.style.borderColor = '#30363d';
+            boxShadow: '-4px 0 15px rgba(163, 113, 247, 0.4)',
+            color: '#f0f6fc',
+            fontSize: '20px',
+            backdropFilter: 'blur(8px)',
+            position: 'absolute',
+            left: '-40px'
           }}
         >
-          <div style={{ fontSize: '42px', marginBottom: '10px' }}>🎲</div>
-          <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f0f6fc', marginBottom: '4px' }}>Рандом</div>
-          <div style={{ fontSize: '11px', textAlign: 'center', color: '#8b949e', lineHeight: '1.2', padding: '0 10px' }}>
-            Клікни, щоб<br/>обрати випадково
-          </div>
-        </button>
+          {isRandomOpen ? '›' : '🎲'}
+        </div>
+
+        {/* Panel Content */}
+        <div 
+          style={{ 
+            width: '160px', 
+            background: 'linear-gradient(135deg, rgba(30, 35, 45, 0.95), rgba(20, 24, 32, 0.95))', 
+            border: '1px solid rgba(163, 113, 247, 0.4)', 
+            borderRight: 'none',
+            borderRadius: '20px 0 0 20px', 
+            padding: '20px 15px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            boxShadow: '-8px 8px 20px rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(8px)'
+          }}
+        >
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎲</div>
+          <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f0f6fc', marginBottom: '6px', textAlign: 'center' }}>Рандомний заклад</div>
+          <button 
+            className="btn-primary" 
+            onClick={() => {
+              if (spots.length > 0) {
+                const randomSpot = spots[Math.floor(Math.random() * spots.length)];
+                onSpotClick && onSpotClick(randomSpot);
+                setIsRandomOpen(false);
+              } else {
+                alert("Немає закладів для вибору!");
+              }
+            }}
+            style={{ fontSize: '12px', padding: '8px', width: '100%', background: 'rgba(163, 113, 247, 0.2)', color: '#d2a8ff', border: '1px solid rgba(163, 113, 247, 0.4)', borderRadius: '10px' }}
+          >
+            Обрати
+          </button>
+        </div>
       </div>
 
       {/* TOP SPOTS */}
