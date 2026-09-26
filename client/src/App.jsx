@@ -306,8 +306,10 @@ function App() {
         .grid-container { display: grid; grid-template-columns: repeat(var(--mobile-cols, 1), 1fr); gap: 16px; padding: 10px 0; }
         .home-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 10px 0; }
         
-        .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
-        .spot-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.5); border-color: rgba(88, 166, 255, 0.4); }
+        .spot-card { background: #161b22; border: none; border-radius: 24px; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .spot-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.04); pointer-events: none; z-index: 10; }
+        .spot-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        .spot-card:hover::after { border-color: rgba(88, 166, 255, 0.3); }
         
         .card-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 100; opacity: 0; transition: opacity 0.2s; }
         .spot-card:hover .card-actions { opacity: 1; }
