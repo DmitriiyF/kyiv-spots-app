@@ -10,14 +10,14 @@ import HomePage from './pages/HomePage';
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
-const CATEGORIES = ['Все', 'Кофейня', 'Ресторан', 'Бар', 'Стрит-фуд', 'Парк / Локация'];
+const CATEGORIES = ['Всі', 'Кав\'ярня', 'Ресторан', 'Бар', 'Стріт-фуд', 'Парк / Локація'];
 const PRICE_LEVELS = ['💸', '💸💸', '💸💸💸'];
-const STATUSES = ['Без статуса', 'Уже был', 'Хочу сходить']; 
+const STATUSES = ['Без статусу', 'Вже був', 'Хочу відвідати']; 
 
 // 🔥 Добавили vibe, mustTry и gallery в начальное состояние формы
 const initialFormState = {
-  name: '', category: 'Кофейня', rating: '', review: '', imageUrl: '', instagramUrl: '',
-  location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статуса', lat: '', lng: '',
+  name: '', category: 'Кав\'ярня', rating: '', review: '', imageUrl: '', instagramUrl: '',
+  location: '', googleMapsUrl: '', priceLevel: '💸', tags: '', status: 'Без статусу', lat: '', lng: '',
   vibe: '', mustTry: '', gallery: []
 };
 
@@ -46,10 +46,11 @@ function App() {
   const [passwordInput, setPasswordInput] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Все');
+  const [selectedCategory, setSelectedCategory] = useState('Всі');
   const [selectedRating, setSelectedRating] = useState('Все');
-  const [selectedStatus, setSelectedStatus] = useState('Все');
+  const [selectedStatus, setSelectedStatus] = useState('Всі');
   const [sortBy, setSortBy] = useState('newest');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const [formData, setFormData] = useState(initialFormState);
   const [siteSettings, setSiteSettings] = useState({ logoUrl: '', bannerUrl: '' });
@@ -243,11 +244,16 @@ function App() {
     .filter(spot => {
       const query = searchQuery.toLowerCase();
       const matchSearch = (spot.name || '').toLowerCase().includes(query) || (spot.review && spot.review.toLowerCase().includes(query)) || (spot.location && spot.location.toLowerCase().includes(query)) || (spot.tags && spot.tags.some(t => t.toLowerCase().includes(query)));
-      const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
+      const legacyCategory = spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category;
+      const matchCategory = selectedCategory === 'Всі' || legacyCategory === selectedCategory;
       const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
-      let spotStat = spot.status || 'Без статуса';
-      if (spotStat === '⚪️ Без статуса') spotStat = 'Без статуса';
-      const matchStatus = selectedStatus === 'Все' || spotStat === selectedStatus;
+      
+      let spotStat = spot.status || 'Без статусу';
+      if (spotStat === 'Без статуса' || spotStat === '⚪️ Без статуса' || spotStat === '⚪️ Без статусу') spotStat = 'Без статусу';
+      if (spotStat === 'Хочу сходить') spotStat = 'Хочу відвідати';
+      if (spotStat === 'Уже был') spotStat = 'Вже був';
+      
+      const matchStatus = selectedStatus === 'Всі' || spotStat === selectedStatus;
       return matchSearch && matchCategory && matchRating && matchStatus;
     })
     .sort((a, b) => {
@@ -270,7 +276,6 @@ function App() {
         .navbar {
           position: sticky; top: 0; z-index: 1000;
           background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
           padding: 15px 4%; display: flex; justify-content: space-between; align-items: center;
           flex-wrap: wrap; gap: 10px;
           margin-bottom: 20px;
@@ -375,87 +380,99 @@ function App() {
           )}
         </Link>
         
-        <div className="nav-links">
-          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Главная</Link>
-          <Link to="/spots" className={`nav-link ${location.pathname === '/spots' ? 'active' : ''}`}>Заведения</Link>
+        <div className="nav-links" style={{ flexGrow: 1 }}>
+          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Головна</Link>
+          <Link to="/spots" className={`nav-link ${location.pathname === '/spots' ? 'active' : ''}`}>Заклади</Link>
           
-          {isAdmin ? (
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '10px' }}>
-              <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
-              <button className="btn-primary" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b949e', padding: '10px', boxShadow: 'none' }} onClick={() => setIsSettingsModalOpen(true)} title="Настройки сайта">⚙️</button>
-              <button className="btn-primary" style={{ background: 'rgba(218, 54, 55, 0.1)', color: '#ff7b72', border: '1px solid rgba(218, 54, 55, 0.2)', padding: '10px', boxShadow: 'none' }} onClick={handleLogout} title="Выйти">🚪</button>
-            </div>
-          ) : (
-            <button className="btn-primary" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b949e', padding: '10px', boxShadow: 'none' }} onClick={() => setIsLoginModalOpen(true)} title="Вход для админа">🔐</button>
-          )}
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {isAdmin ? (
+              <>
+                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Додати</button>
+                <button className="btn-primary" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b949e', padding: '10px', boxShadow: 'none' }} onClick={() => setIsSettingsModalOpen(true)} title="Налаштування сайту">⚙️</button>
+                <button className="btn-primary" style={{ background: 'rgba(218, 54, 55, 0.1)', color: '#ff7b72', border: '1px solid rgba(218, 54, 55, 0.2)', padding: '10px', boxShadow: 'none' }} onClick={handleLogout} title="Вийти">🚪</button>
+              </>
+            ) : (
+              <button className="btn-primary" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b949e', padding: '10px', boxShadow: 'none' }} onClick={() => setIsLoginModalOpen(true)} title="Вхід для адміна">🔐</button>
+            )}
+          </div>
         </div>
       </header>
 
       <Routes>
-        <Route path="/" element={<HomePage spots={spots} siteSettings={siteSettings} />} />
+        <Route path="/" element={<HomePage spots={spots} siteSettings={siteSettings} onSpotClick={setDetailedSpot} />} />
         
         <Route path="/spots" element={
           <div style={{ padding: '0 4%' }}>
             <div className="filters-container">
-              <div className="categories-scroll">
-                {CATEGORIES.map(cat => <button key={cat} className={`pill ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>{cat}</button>)}
-              </div>
-              <div className="filters-row">
-                <input type="text" className="search-input" placeholder="🔍 Название, отзыв, метро или тег..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                <select className="select-custom" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
-                  <option value="Все">📖 Все статусы</option>
-                  <option value="Уже был">✅ Уже был</option>
-                  <option value="Хочу сходить">📌 Хочу сходить</option>
-                  <option value="Без статуса">⚪️ Без статуса</option>
-                </select>
-                <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
-                  <option value="Все">⭐️ Любой рейтинг</option>
-                  <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                  <option value="4">⭐⭐⭐⭐ (4)</option>
-                  <option value="3">⭐⭐⭐ (3)</option>
-                </select>
-                {viewMode === 'grid' && (
-                  <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                    <option value="newest">🕒 Сначала новые</option>
-                    <option value="oldest">⏳ Сначала старые</option>
-                    <option value="rating">🔥 По рейтингу</option>
-                  </select>
-                )}
-                <div className="view-toggle" style={{ marginLeft: 'auto' }}>
-                  <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
-                  <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На карте</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <div className="categories-scroll" style={{ flexGrow: 1 }}>
+                  {CATEGORIES.map(cat => <button key={cat} className={`pill ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>{cat}</button>)}
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="view-toggle" style={{ display: 'flex' }}>
+                    <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
+                    <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На мапі</button>
+                  </div>
+                  <button className="btn-primary" style={{ padding: '8px 12px', background: 'rgba(13, 17, 23, 0.6)', border: '1px solid rgba(255,255,255,0.1)', color: '#c9d1d9', display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => setIsFiltersOpen(!isFiltersOpen)}>
+                    Фільтри {isFiltersOpen ? '▲' : '▼'}
+                  </button>
                 </div>
               </div>
+
+              {isFiltersOpen && (
+                <div className="filters-row" style={{ marginTop: '5px' }}>
+                  <input type="text" className="search-input" placeholder="🔍 Пошук за назвою, відгуком, метро..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                  <select className="select-custom" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+                    <option value="Всі">📖 Всі статуси</option>
+                    <option value="Вже був">✅ Вже був</option>
+                    <option value="Хочу відвідати">📌 Хочу відвідати</option>
+                    <option value="Без статусу">⚪️ Без статусу</option>
+                  </select>
+                  <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
+                    <option value="Все">⭐️ Будь-який рейтинг</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4)</option>
+                    <option value="3">⭐⭐⭐ (3)</option>
+                  </select>
+                  {viewMode === 'grid' && (
+                    <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                      <option value="newest">🕒 Спочатку нові</option>
+                      <option value="oldest">⏳ Спочатку старі</option>
+                      <option value="rating">🔥 За рейтингом</option>
+                    </select>
+                  )}
+                </div>
+              )}
             </div>
 
             {filteredAndSortedSpots.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>Ничего не найдено 🤷‍♂️</div>
+              <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>Нічого не знайдено 🤷‍♂️</div>
             ) : viewMode === 'grid' ? (
               <div className="grid-container">
                 {filteredAndSortedSpots.map(spot => (
                   <div key={spot._id} className="spot-card">
                     
                     <div className="card-actions">
-                      <button className="action-btn story" onClick={(e) => { e.stopPropagation(); setStorySpot(spot); }} title="Сгенерировать Сторис">📲</button>
+                      <button className="action-btn story" onClick={(e) => { e.stopPropagation(); setStorySpot(spot); }} title="Згенерувати Сторіс">📲</button>
                       {isAdmin && (
                         <>
-                          <button className="action-btn" onClick={(e) => { e.stopPropagation(); handleEditClick(spot); }} title="Редактировать">✏️</button>
-                          <button className="action-btn delete" onClick={(e) => { e.stopPropagation(); handleDeleteClick(spot._id, spot.name); }} title="Удалить">🗑</button>
+                          <button className="action-btn" onClick={(e) => { e.stopPropagation(); handleEditClick(spot); }} title="Редагувати">✏️</button>
+                          <button className="action-btn delete" onClick={(e) => { e.stopPropagation(); handleDeleteClick(spot._id, spot.name); }} title="Видалити">🗑</button>
                         </>
                       )}
                     </div>
 
                   {spot.imageUrl ? (
-                      <img src={spot.imageUrl} alt={spot.name} className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальнее" />
+                      <img src={spot.imageUrl} alt={spot.name} className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальніше" />
                     ) : (
-                      <div className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальнее">Нет фото</div>
+                      <div className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальніше">Немає фото</div>
                     )}
                     <div className="spot-content" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }}>
                       <div className="badge-row">
-                        <span className="spot-tag">{spot.category}</span>
-                        {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
-                          <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
-                            {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
+                        <span className="spot-tag">{spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}</span>
+                        {spot.status && spot.status !== 'Без статуса' && spot.status !== 'Без статусу' && spot.status !== '⚪️ Без статуса' && spot.status !== '⚪️ Без статусу' && (
+                          <span className={`status-tag ${spot.status === 'Хочу сходить' || spot.status === 'Хочу відвідати' ? 'wishlist' : ''}`}>
+                            {spot.status === 'Хочу сходить' || spot.status === 'Хочу відвідати' ? '📌 Хочу відвідати' : '✅ Вже був'}
                           </span>
                         )}
                       </div>
@@ -464,7 +481,7 @@ function App() {
                         <span className="spot-price">{spot.priceLevel}</span>
                       </div>
                       {spot.location && <p className="spot-location">📍 {spot.location}</p>}
-                      {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : <p className="spot-rating" style={{ color: '#8b949e', fontSize: '12px' }}>Без оценки</p>}
+                      {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : <p className="spot-rating" style={{ color: '#8b949e', fontSize: '12px' }}>Без оцінки</p>}
                       
                       {spot.tags && spot.tags.length > 0 && (
                         <div className="mini-tags-container">
@@ -498,7 +515,7 @@ function App() {
         {storySpot && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '15px', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '360px' }}>
-              <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Превью для Instagram</h2>
+              <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Прев'ю для Instagram</h2>
               <button onClick={() => setStorySpot(null)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '32px', cursor: 'pointer', lineHeight: '20px' }}>×</button>
             </div>
 
@@ -513,7 +530,9 @@ function App() {
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to bottom, transparent, #161b22)' }}></div>
                 
                 <div style={{ position: 'absolute', bottom: '15px', left: '24px', display: 'flex', gap: '8px', zIndex: 20 }}>
-                  <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{storySpot.category}</span>
+                  <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                    {storySpot.category === 'Кофейня' ? 'Кав\'ярня' : storySpot.category === 'Парк / Локация' ? 'Парк / Локація' : storySpot.category}
+                  </span>
                   <span style={{ background: '#21262d', color: '#8b949e', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', border: '1px solid #30363d', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{storySpot.priceLevel}</span>
                 </div>
               </div>
@@ -543,7 +562,7 @@ function App() {
             </div>
 
             <button onClick={downloadStory} style={{ background: '#a371f7', color: '#fff', border: 'none', padding: '16px 32px', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.2s', boxShadow: '0 4px 15px rgba(163, 113, 247, 0.4)' }}>
-              📲 Скачать PNG
+              📲 Завантажити PNG
             </button>
           </div>
         )}
@@ -552,23 +571,23 @@ function App() {
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '480px', border: '1px solid #30363d', maxHeight: '90vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '22px' }}>{editingSpotId ? 'Редактировать место' : 'Новое место'}</h2>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '22px' }}>{editingSpotId ? 'Редагувати заклад' : 'Новий заклад'}</h2>
                 <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
               </div>
               
               <form onSubmit={handleSubmit}>
-                <input className="input-field" placeholder="Название заведения" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                <input className="input-field" placeholder="Назва закладу" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
                 <div className="form-row">
                   <select className="input-field" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} style={{ flex: 1 }}>
                     {CATEGORIES.filter(c => c !== 'Все').map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
                   <select className="input-field" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} style={{ flex: 1 }}>
-                    {STATUSES.map(st => <option key={st} value={st}>{st === 'Без статуса' ? '⚪️ Без статуса' : st}</option>)}
+                    {STATUSES.map(st => <option key={st} value={st}>{st === 'Без статуса' ? '⚪️ Без статусу' : st}</option>)}
                   </select>
                 </div>
                 <div className="form-row">
 <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Оценка (1-5)</label>
+                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Оцінка (1-5)</label>
                     <input 
                       className="input-field" 
                       type="number" 
@@ -580,7 +599,7 @@ function App() {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Уровень цен</label>
+                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#8b949e' }}>Рівень цін</label>
                     <select className="input-field" value={formData.priceLevel} onChange={e => setFormData({...formData, priceLevel: e.target.value})}>
                       {PRICE_LEVELS.map(pl => <option key={pl} value={pl}>{pl}</option>)}
                     </select>
@@ -589,12 +608,12 @@ function App() {
 
                 {/* 🔥 НОВЫЕ ПОЛЯ */}
                 <div className="form-row">
-                  <input className="input-field" placeholder="Атмосфера (например: Для свиданий)" value={formData.vibe} onChange={e => setFormData({...formData, vibe: e.target.value})} style={{ flex: 1 }} />
-                  <input className="input-field" placeholder="Must Try (что пробовать?)" value={formData.mustTry} onChange={e => setFormData({...formData, mustTry: e.target.value})} style={{ flex: 1 }} />
+                  <input className="input-field" placeholder="Атмосфера (наприклад: Для побачень)" value={formData.vibe} onChange={e => setFormData({...formData, vibe: e.target.value})} style={{ flex: 1 }} />
+                  <input className="input-field" placeholder="Must Try (що куштувати?)" value={formData.mustTry} onChange={e => setFormData({...formData, mustTry: e.target.value})} style={{ flex: 1 }} />
                 </div>
 
-                <input className="input-field" placeholder="Район / Метро (например: Подол)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
-                <input className="input-field" placeholder="Теги через запятую" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
+                <input className="input-field" placeholder="Район / Метро (наприклад: Поділ)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+                <input className="input-field" placeholder="Теги через кому" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
                 
                 {/* ГЛАВНОЕ ФОТО ОБЛОЖКИ */}
                 <ImageUploader 
@@ -605,7 +624,7 @@ function App() {
 
                 {/* 🔥 ГАЛЕРЕЯ ДЛЯ ДОПОЛНИТЕЛЬНЫХ ФОТО */}
                 <div style={{ background: '#21262d', padding: '12px', borderRadius: '6px', marginBottom: '12px', border: '1px solid #30363d' }}>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Галерея (дополнительные фото):</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Галерея (додаткові фото):</label>
                   
                   {formData.gallery && formData.gallery.length > 0 && (
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
@@ -631,15 +650,15 @@ function App() {
                   />
                 </div>
 
-                <input className="input-field" placeholder="Ссылка на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
-                <input className="input-field" placeholder="Ссылка на Google Maps" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />
+                <input className="input-field" placeholder="Посилання на Instagram" value={formData.instagramUrl} onChange={e => setFormData({...formData, instagramUrl: e.target.value})} />
+                <input className="input-field" placeholder="Посилання на Google Maps" value={formData.googleMapsUrl} onChange={handleGoogleMapsChange} />
                 <div className="form-row" style={{ marginBottom: '12px' }}>
                   <input className="input-field" placeholder="Широта (lat)" value={formData.lat} onChange={e => setFormData({...formData, lat: e.target.value})} style={{ marginBottom: 0 }} />
-                  <input className="input-field" placeholder="Долгота (lng)" value={formData.lng} onChange={e => setFormData({...formData, lng: e.target.value})} style={{ marginBottom: 0 }} />
+                  <input className="input-field" placeholder="Довгота (lng)" value={formData.lng} onChange={e => setFormData({...formData, lng: e.target.value})} style={{ marginBottom: 0 }} />
                 </div>
-                <textarea className="input-field" placeholder="Твой отзыв..." value={formData.review} onChange={e => setFormData({...formData, review: e.target.value})} style={{ minHeight: '80px', resize: 'vertical' }} />
+                <textarea className="input-field" placeholder="Твій відгук..." value={formData.review} onChange={e => setFormData({...formData, review: e.target.value})} style={{ minHeight: '80px', resize: 'vertical' }} />
                 <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '16px' }}>
-                  {editingSpotId ? 'Сохранить изменения' : 'Сохранить в базу'}
+                  {editingSpotId ? 'Зберегти зміни' : 'Зберегти в базу'}
                 </button>
               </form>
             </div>
@@ -650,13 +669,13 @@ function App() {
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '400px', border: '1px solid #30363d' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Настройки сайта</h2>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Налаштування сайту</h2>
                 <button onClick={() => setIsSettingsModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
               </div>
               <form onSubmit={handleSaveSettings}>
                 
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Логотип (вместо "K"):</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Логотип (замість "K"):</label>
                   <ImageUploader 
                     imageUrl={siteSettings.logoUrl}
                     onUploadSuccess={(url) => setSiteSettings(prev => ({ ...prev, logoUrl: url }))}
@@ -665,7 +684,7 @@ function App() {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Баннер Главной (градиент исчезнет):</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '8px', color: '#8b949e', fontWeight: 'bold' }}>Банер Головної (градієнт зникне):</label>
                   <ImageUploader 
                     imageUrl={siteSettings.bannerUrl}
                     onUploadSuccess={(url) => setSiteSettings(prev => ({ ...prev, bannerUrl: url }))}
@@ -673,7 +692,7 @@ function App() {
                   />
                 </div>
 
-                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Сохранить настройки</button>
+                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Зберегти налаштування</button>
               </form>
             </div>
           </div>
@@ -683,12 +702,12 @@ function App() {
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000, padding: '15px' }}>
             <div style={{ background: '#161b22', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '320px', border: '1px solid #30363d' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Вход для админа</h2>
+                <h2 style={{ margin: 0, color: '#f0f6fc', fontSize: '20px' }}>Вхід для адміна</h2>
                 <button onClick={() => setIsLoginModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '28px', cursor: 'pointer' }}>×</button>
               </div>
               <form onSubmit={handleLogin}>
                 <input type="password" placeholder="Пароль" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} className="input-field" autoFocus required />
-                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Войти</button>
+                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Увійти</button>
               </form>
             </div>
           </div>

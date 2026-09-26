@@ -45,12 +45,14 @@ export default function SpotDetailsModal({ spot, onClose }) {
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', cursor: 'zoom-in' }} 
             />
           ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Нет фото</div>
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Немає фото</div>
           )}
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, transparent, #161b22)', pointerEvents: 'none' }}></div>
           
           <div style={{ position: 'absolute', bottom: '15px', left: '20px', display: 'flex', gap: '8px' }}>
-            <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{spot.category}</span>
+            <span style={{ background: '#238636', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              {spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}
+            </span>
             <span style={{ background: '#21262d', color: '#8b949e', padding: '4px 10px', borderRadius: '8px', fontSize: '13px', border: '1px solid #30363d', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{spot.priceLevel}</span>
             {spot.vibe && (
               <span style={{ background: '#a371f7', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{spot.vibe}</span>
@@ -68,7 +70,7 @@ export default function SpotDetailsModal({ spot, onClose }) {
               {spot.rating && <span style={{ fontSize: '18px' }}>{'⭐️'.repeat(spot.rating)}</span>}
               {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
                 <span style={{ background: '#161b22', border: `1px solid ${spot.status === 'Хочу сходить' ? '#388bfd' : '#30363d'}`, color: spot.status === 'Хочу сходить' ? '#58a6ff' : '#8b949e', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold' }}>
-                  {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
+                  {spot.status === 'Хочу сходить' ? '📌 Хочу відвідати' : '✅ Вже був'}
                 </span>
               )}
             </div>
@@ -135,7 +137,7 @@ export default function SpotDetailsModal({ spot, onClose }) {
             <div style={{ display: 'flex', gap: '10px' }}>
               {spot.googleMapsUrl && (
                 <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#21262d', border: '1px solid #30363d', color: '#ffb86c', padding: '12px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', transition: '0.2s' }}>
-                  🗺 Открыть карту
+                  🗺 Відкрити мапу
                 </a>
               )}
               {spot.instagramUrl && (

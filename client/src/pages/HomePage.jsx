@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const HomePage = ({ spots, siteSettings }) => {
+const HomePage = ({ spots, siteSettings, onSpotClick }) => {
   const topSpots = [...spots]
     .filter(s => s.imageUrl)
     .sort((a, b) => b.rating - a.rating)
@@ -11,7 +11,7 @@ const HomePage = ({ spots, siteSettings }) => {
     <div style={{ padding: '0 4%' }}>
       {/* HERO SECTION */}
       <div style={{ 
-        background: siteSettings?.bannerUrl ? `linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.3) 50%, rgba(13, 17, 23, 0.1) 100%), url(${siteSettings.bannerUrl})` : 'linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1))', 
+        backgroundImage: siteSettings?.bannerUrl ? `linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.3) 50%, rgba(13, 17, 23, 0.1) 100%), url(${siteSettings.bannerUrl})` : 'linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1))', 
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -49,18 +49,20 @@ const HomePage = ({ spots, siteSettings }) => {
       {/* TOP SPOTS */}
       {topSpots.length > 0 && (
         <div style={{ marginBottom: '60px' }}>
-          <h2 style={{ fontSize: '28px', color: '#f0f6fc', marginBottom: '20px' }}>🔥 Топ заведения</h2>
+          <h2 style={{ fontSize: '28px', color: '#f0f6fc', marginBottom: '20px' }}>🔥 Топ заклади</h2>
           <div className="grid-container">
             {topSpots.map(spot => (
-              <div key={spot._id} className="spot-card" style={{ cursor: 'default' }}>
+              <div key={spot._id} className="spot-card" onClick={() => onSpotClick && onSpotClick(spot)} style={{ cursor: 'pointer' }} title="Детальніше">
                 {spot.imageUrl ? (
                   <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
                 ) : (
-                  <div className="spot-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>Нет фото</div>
+                  <div className="spot-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>Немає фото</div>
                 )}
                 <div className="spot-content">
                   <div className="badge-row">
-                    <span className="spot-tag">{spot.category}</span>
+                    <span className="spot-tag">
+                      {spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}
+                    </span>
                   </div>
                   <div className="spot-title-row">
                     <h3 className="spot-title">{spot.name}</h3>
