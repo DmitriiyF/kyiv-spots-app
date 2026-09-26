@@ -242,7 +242,7 @@ function App() {
   const filteredAndSortedSpots = spots
     .filter(spot => {
       const query = searchQuery.toLowerCase();
-      const matchSearch = spot.name.toLowerCase().includes(query) || (spot.review && spot.review.toLowerCase().includes(query)) || (spot.location && spot.location.toLowerCase().includes(query)) || (spot.tags && spot.tags.some(t => t.toLowerCase().includes(query)));
+      const matchSearch = (spot.name || '').toLowerCase().includes(query) || (spot.review && spot.review.toLowerCase().includes(query)) || (spot.location && spot.location.toLowerCase().includes(query)) || (spot.tags && spot.tags.some(t => t.toLowerCase().includes(query)));
       const matchCategory = selectedCategory === 'Все' || spot.category === selectedCategory;
       const matchRating = selectedRating === 'Все' || parseInt(spot.rating) === parseInt(selectedRating);
       let spotStat = spot.status || 'Без статуса';
