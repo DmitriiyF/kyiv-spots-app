@@ -610,21 +610,23 @@ function App() {
           </div>
         )}
 
-        <div style={{ position: 'fixed', bottom: '20px', right: '20px', width: '320px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.8)', zIndex: 1000, fontFamily: 'monospace' }}>
-          <div onClick={() => setIsLogsOpen(!isLogsOpen)} style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: 'bold', borderBottom: isLogsOpen ? '1px solid #30363d' : 'none', fontSize: '14px' }}>
-            <span>📜 Логи сервера</span>
-            <span>{isLogsOpen ? '▼' : '▲'}</span>
-          </div>
-          {isLogsOpen && (
-            <div style={{ padding: '12px 16px', height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {logs.map((log, i) => (
-                <div key={i} style={{ color: log.type === 'error' ? '#ff7b72' : log.type === 'success' ? '#3fb950' : '#8b949e', fontSize: '12px', borderBottom: '1px solid #21262d', paddingBottom: '8px' }}>
-                  <span style={{ color: '#3fb950' }}>[{log.time}]</span> {log.message}
-                </div>
-              ))}
+        {isAdmin && (
+          <div style={{ position: 'fixed', bottom: '20px', right: '20px', width: '320px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.8)', zIndex: 1000, fontFamily: 'monospace' }}>
+            <div onClick={() => setIsLogsOpen(!isLogsOpen)} style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: 'bold', borderBottom: isLogsOpen ? '1px solid #30363d' : 'none', fontSize: '14px' }}>
+              <span>📜 Логи сервера</span>
+              <span>{isLogsOpen ? '▼' : '▲'}</span>
             </div>
-          )}
-        </div>
+            {isLogsOpen && (
+              <div style={{ padding: '12px 16px', height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {logs.map((log, i) => (
+                  <div key={i} style={{ color: log.type === 'error' ? '#ff7b72' : log.type === 'success' ? '#3fb950' : '#8b949e', fontSize: '12px', borderBottom: '1px solid #21262d', paddingBottom: '8px' }}>
+                    <span style={{ color: '#3fb950' }}>[{log.time}]</span> {log.message}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <SpotDetailsModal spot={detailedSpot} onClose={() => setDetailedSpot(null)} />
         
