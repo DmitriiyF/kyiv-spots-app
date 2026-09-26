@@ -50,7 +50,7 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
       {topSpots.length > 0 && (
         <div style={{ marginBottom: '60px' }}>
           <h2 style={{ fontSize: '28px', color: '#f0f6fc', marginBottom: '20px' }}>🔥 Топ заклади</h2>
-          <div className="grid-container">
+          <div className="home-grid-container">
             {topSpots.map(spot => (
               <div key={spot._id} className="spot-card" onClick={() => onSpotClick && onSpotClick(spot)} style={{ cursor: 'pointer' }} title="Детальніше">
                 {spot.imageUrl ? (

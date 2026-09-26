@@ -302,7 +302,8 @@ function App() {
         .select-custom { padding: 12px 20px; background: rgba(13, 17, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .select-custom:focus { border-color: #58a6ff; }
 
-        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 10px 0; }
+        .grid-container { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 10px 0; }
+        .home-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 10px 0; }
         
         .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
         .spot-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.5); border-color: rgba(88, 166, 255, 0.4); }
@@ -317,7 +318,7 @@ function App() {
         .spot-image { width: 100%; height: 100%; object-fit: cover; }
         .spot-gradient { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(22,27,34,1) 0%, transparent 100%); pointer-events: none; }
         
-        .spot-badges-top { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 10; }
+        .spot-badges-top { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 10; max-width: 80%; }
         .spot-tag, .status-tag { background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .spot-tag { color: #4ade80; }
         .status-tag.wishlist { color: #facc15; }
@@ -337,7 +338,8 @@ function App() {
         .spot-review { margin: 4px 0 0 0; font-size: 13px; color: #c9d1d9; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
         
         .links-row { display: flex; gap: 8px; margin-top: auto; padding-top: 16px; }
-        .spot-link { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+        .spot-link { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; min-width: 0; }
+        .spot-link span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .spot-link:hover { transform: translateY(-2px); }
         .spot-link.instagram { color: #d2a8ff; background: rgba(163, 113, 247, 0.1); border-color: rgba(163, 113, 247, 0.2); }
         .spot-link.instagram:hover { background: rgba(163, 113, 247, 0.2); box-shadow: 0 4px 12px rgba(163, 113, 247, 0.15); }
@@ -352,8 +354,12 @@ function App() {
         .view-btn { background: transparent; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; border-radius: 8px; transition: 0.2s; }
         .view-btn.active { background: #30363d; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
+        @media (min-width: 500px) {
+          .grid-container { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (min-width: 768px) {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 20px 0; }
+          .home-grid-container { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
           .spot-image-wrapper { height: 220px; }
           .spot-title { font-size: 20px; }
           .spot-price { font-size: 15px; }
@@ -500,17 +506,18 @@ function App() {
                       <div className="links-row">
                         {spot.instagramUrl && (
                           <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link instagram" onClick={(e) => e.stopPropagation()} title="Перейти в Instagram">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                               <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
                               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                               <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                             </svg>
-                            Instagram
+                            <span>Instagram</span>
                           </a>
                         )}                    
                         {spot.googleMapsUrl && (
                           <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="spot-link maps">
-                            🗺 Маршрут
+                            <span style={{ fontSize: '16px', flexShrink: 0 }}>🗺</span>
+                            <span>Маршрут</span>
                           </a>
                         )}
                       </div>
