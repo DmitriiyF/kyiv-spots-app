@@ -14,6 +14,7 @@ const HomePage = ({ spots, siteSettings }) => {
         background: siteSettings?.bannerUrl ? `linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.3) 50%, rgba(13, 17, 23, 0.1) 100%), url(${siteSettings.bannerUrl})` : 'linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1))', 
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         borderRadius: '24px', 
         padding: '60px 40px 40px 40px', 
         textAlign: 'left',
@@ -35,10 +36,10 @@ const HomePage = ({ spots, siteSettings }) => {
         )}
 
         <h1 style={{ fontSize: '48px', color: '#f0f6fc', marginBottom: '15px', fontWeight: 800, letterSpacing: '-1px', position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 10px rgba(0,0,0,0.8)' : 'none' }}>
-          Где провести время в Киеве? 🇺🇦
+          Где провести время в Киеве?
         </h1>
         <p style={{ fontSize: '18px', color: '#c9d1d9', maxWidth: '600px', margin: '0 0 25px 0', lineHeight: 1.6, position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 5px rgba(0,0,0,0.8)' : 'none' }}>
-          Мы собрали лучшие заведения столицы — от уютных кофеен до топовых ресторанов и баров. Находи новые места, смотри отзывы и строй маршруты.
+          Я зібрав кращі заклади столиці — від затишних кав'ярень до топових ресторанів і барів.
         </p>
         <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '16px', padding: '12px 24px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
           Смотреть все заведения
