@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import ImageUploader from './components/ImageUploader';
 import html2canvas from 'html2canvas';
 import SpotDetailsModal from './components/SpotDetailsModal';
+import { Routes, Route, useLocation, Link } from 'react-router-dom';
+import HomePage from './pages/HomePage';
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://kyiv-spots-app.onrender.com';
 
@@ -50,6 +52,8 @@ function App() {
   const [sortBy, setSortBy] = useState('newest');
 
   const [formData, setFormData] = useState(initialFormState);
+
+  const location = useLocation();
 
   const addLog = (message, type = 'info') => {
     const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
@@ -215,196 +219,230 @@ function App() {
   return (
     <>
       <style>{`
-        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; }
+        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         * { box-sizing: border-box; }
         
-        .filters-container { background: #161b22; padding: 15px; border-radius: 12px; border: 1px solid #30363d; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
+        /* Modern Glassmorphism NavBar */
+        .navbar {
+          position: sticky; top: 0; z-index: 1000;
+          background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          padding: 15px 4%; display: flex; justify-content: space-between; align-items: center;
+          margin-bottom: 20px;
+        }
+        .nav-logo {
+          display: flex; align-items: center; gap: 10px; text-decoration: none;
+        }
+        .nav-logo h1 { margin: 0; color: #f0f6fc; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-link { color: #8b949e; text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        .nav-link:hover, .nav-link.active { color: #f0f6fc; }
+
+        .filters-container { background: rgba(22, 27, 34, 0.5); backdrop-filter: blur(8px); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
         .filters-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .categories-scroll::-webkit-scrollbar { display: none; }
         
-        .pill { padding: 8px 16px; background: #21262d; border: 1px solid #30363d; border-radius: 20px; color: #c9d1d9; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-size: 14px; }
-        .pill.active { background: #238636; border-color: #2ea043; color: white; font-weight: bold; }
+        .pill { padding: 8px 16px; background: rgba(33, 38, 45, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; color: #c9d1d9; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-size: 14px; }
+        .pill:hover { background: rgba(48, 54, 61, 0.8); }
+        .pill.active { background: #58a6ff; border-color: #58a6ff; color: #0d1117; font-weight: 700; box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3); }
         
-        .search-input { flex-grow: 1; padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; min-width: 200px; }
-        .select-custom { padding: 10px 15px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; }
+        .search-input { flex-grow: 1; padding: 12px 20px; background: rgba(13, 17, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; min-width: 200px; transition: 0.2s; }
+        .search-input:focus { border-color: #58a6ff; background: rgba(13, 17, 23, 0.8); }
+        .select-custom { padding: 12px 20px; background: rgba(13, 17, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .select-custom:focus { border-color: #58a6ff; }
 
-        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 10px 0; }
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 10px 0; }
         
-        .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
-        .spot-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-color: #8b949e; }
+        .spot-card { background: rgba(22, 27, 34, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; position: relative; }
+        .spot-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.15); background: rgba(22, 27, 34, 0.8); }
         
-        .card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 100; }
-        .action-btn { background: rgba(13, 17, 23, 0.85); border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; cursor: pointer; padding: 5px 8px; font-size: 12px; }
+        .card-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 100; opacity: 0; transition: opacity 0.2s; }
+        .spot-card:hover .card-actions { opacity: 1; }
+        .action-btn { background: rgba(13, 17, 23, 0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #c9d1d9; cursor: pointer; padding: 6px 10px; font-size: 14px; transition: 0.2s; }
         .action-btn.delete:hover { background: #da3637; color: white; border-color: #f85149; }
         .action-btn.story:hover { background: #a371f7; color: white; border-color: #d2a8ff; }
 
-        .spot-image { width: 100%; height: 150px; object-fit: cover; background: #21262d; }
+        .spot-image { width: 100%; height: 180px; object-fit: cover; background: #21262d; }
         
-        .spot-content { padding: 0 10px 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+        .spot-content { padding: 0 16px 16px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }
         
-        .badge-row { position: relative; margin-top: -28px; margin-left: 10px; margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
+        .badge-row { position: relative; margin-top: -32px; margin-left: 16px; margin-bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
         
-        .spot-tag { background: #238636; color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .status-tag { background: #161b22; border: 1px solid #30363d; color: #8b949e; padding: 3px 8px; border-radius: 6px; font-size: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .spot-tag { background: rgba(35, 134, 54, 0.9); backdrop-filter: blur(4px); color: white; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        .status-tag { background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
-        .spot-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 5px; margin-top: 4px; }
-        .spot-title { margin: 0; color: #f0f6fc; font-size: 14px; word-wrap: break-word; line-height: 1.3; }
-        .spot-price { font-size: 12px; color: #8b949e; font-weight: bold; white-space: nowrap; }
-        .spot-location { font-size: 11px; color: #8b949e; margin: 0; display: flex; align-items: center; gap: 2px; }
-        .spot-rating { margin: 0; font-size: 12px; }
+        .spot-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-top: 4px; }
+        .spot-title { margin: 0; color: #f0f6fc; font-size: 16px; font-weight: 700; word-wrap: break-word; line-height: 1.3; }
+        .spot-price { font-size: 14px; color: #8b949e; font-weight: bold; white-space: nowrap; }
+        .spot-location { font-size: 12px; color: #8b949e; margin: 0; display: flex; align-items: center; gap: 4px; }
+        .spot-rating { margin: 0; font-size: 14px; }
         
-        .mini-tags-container { display: flex; gap: 4px; flex-wrap: wrap; margin: 2px 0; }
-        .mini-tag { background: #30363d; color: #c9d1d9; font-size: 9px; padding: 1px 5px; border-radius: 4px; }
+        .mini-tags-container { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0; }
+        .mini-tag { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #8b949e; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
 
-        .spot-review { margin: 0; font-size: 11px; color: #8b949e; line-height: 1.4; flex-grow: 1; }
-        .links-row { display: flex; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #30363d; }
-        .spot-link { color: #58a6ff; text-decoration: none; font-size: 12px; font-weight: bold; }
+        .spot-review { margin: 0; font-size: 13px; color: #8b949e; line-height: 1.5; flex-grow: 1; }
+        .links-row { display: flex; gap: 12px; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .spot-link { color: #58a6ff; text-decoration: none; font-size: 13px; font-weight: 600; transition: color 0.2s; }
+        .spot-link:hover { color: #79c0ff; }
         
-        .map-container-wrapper { height: 600px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
-        .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
-        .leaflet-popup-tip { background: #161b22; border: 1px solid #30363d; }
-        .leaflet-popup-content { margin: 10px; }
-        .view-toggle { display: flex; background: #21262d; border-radius: 8px; overflow: hidden; border: 1px solid #30363d; }
-        .view-btn { background: none; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .view-btn.active { background: #30363d; color: #fff; }
+        .map-container-wrapper { height: 600px; width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px; }
+        .leaflet-popup-content-wrapper { background: rgba(22, 27, 34, 0.9) !important; backdrop-filter: blur(8px); color: #c9d1d9 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; }
+        .leaflet-popup-tip { background: rgba(22, 27, 34, 0.9) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+        .leaflet-popup-content { margin: 12px !important; }
+        .view-toggle { display: flex; background: rgba(13, 17, 23, 0.5); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); padding: 2px; }
+        .view-btn { background: transparent; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; border-radius: 8px; transition: 0.2s; }
+        .view-btn.active { background: #30363d; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
         @media (min-width: 768px) {
-          .grid-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 20px 0; }
-          .spot-card { border-radius: 12px; }
+          .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 20px 0; }
+          .spot-card { border-radius: 24px; }
           .spot-image { height: 220px; }
-          .badge-row { margin-left: 18px; margin-bottom: 12px; }
-          .spot-content { padding: 0 18px 18px; gap: 10px; }
-          .spot-tag, .status-tag { padding: 4px 10px; border-radius: 8px; font-size: 12px; }
-          .spot-title { font-size: 18px; }
-          .spot-price { font-size: 14px; }
-          .spot-location { font-size: 13px; }
-          .spot-rating { font-size: 14px; }
-          .mini-tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; }
-          .spot-review { font-size: 13px; }
-          .spot-link { font-size: 13px; }
+          .badge-row { margin-left: 20px; margin-bottom: 16px; }
+          .spot-content { padding: 0 20px 20px; gap: 12px; }
+          .spot-tag, .status-tag { padding: 6px 14px; border-radius: 10px; font-size: 12px; }
+          .spot-title { font-size: 20px; }
+          .spot-price { font-size: 15px; }
+          .spot-location { font-size: 14px; }
+          .spot-rating { font-size: 16px; }
+          .mini-tag { font-size: 12px; padding: 4px 10px; border-radius: 8px; }
+          .spot-review { font-size: 14px; }
+          .spot-link { font-size: 14px; }
         }
 
-        .btn-primary { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
-        .btn-primary:hover { background: #2ea043; }
-        .input-field { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; margin-bottom: 12px; font-family: inherit; font-size: 14px; }
-        .input-field:focus { outline: none; border-color: #58a6ff; }
-        .form-row { display: flex; gap: 10px; }
+        .btn-primary { background: #58a6ff; color: #0d1117; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
+        .btn-primary:hover { background: #79c0ff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(88, 166, 255, 0.3); }
+        .input-field { width: 100%; padding: 12px; background: rgba(13, 17, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; border-radius: 10px; margin-bottom: 16px; font-family: inherit; font-size: 14px; transition: 0.2s; }
+        .input-field:focus { outline: none; border-color: #58a6ff; background: rgba(13, 17, 23, 0.8); }
+        .form-row { display: flex; gap: 12px; }
       `}</style>
 
-      <div style={{ width: '100%', padding: '20px 4%' }}>
+      {/* NAVBAR */}
+      <header className="navbar">
+        <Link to="/" className="nav-logo">
+          {/* Иконка-заглушка вместо логотипа */}
+          <div style={{ background: 'linear-gradient(135deg, #58a6ff, #a371f7)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>K</div>
+          <h1>Kyiv Spots</h1>
+        </Link>
         
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
-          <h1 style={{ margin: 0, color: '#f0f6fc', fontSize: '28px' }}>Kyiv Spots 🇺🇦</h1>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <div className="view-toggle">
-              <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
-              <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На карте</button>
+        <div className="nav-links">
+          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Главная</Link>
+          <Link to="/spots" className={`nav-link ${location.pathname === '/spots' ? 'active' : ''}`}>Заведения</Link>
+          
+          {isAdmin ? (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '10px' }}>
+              <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
+              <button className="btn-primary" style={{ background: 'rgba(218, 54, 55, 0.1)', color: '#ff7b72', border: '1px solid rgba(218, 54, 55, 0.2)', padding: '10px', boxShadow: 'none' }} onClick={handleLogout} title="Выйти">🚪</button>
             </div>
-            
-            {isAdmin ? (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ Добавить</button>
-                <button className="btn-primary" style={{ background: '#da3637', padding: '10px' }} onClick={handleLogout} title="Выйти">🚪</button>
+          ) : (
+            <button className="btn-primary" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b949e', padding: '10px', boxShadow: 'none' }} onClick={() => setIsLoginModalOpen(true)} title="Вход для админа">🔐</button>
+          )}
+        </div>
+      </header>
+
+      <Routes>
+        <Route path="/" element={<HomePage spots={spots} />} />
+        
+        <Route path="/spots" element={
+          <div style={{ padding: '0 4%' }}>
+            <div className="filters-container">
+              <div className="categories-scroll">
+                {CATEGORIES.map(cat => <button key={cat} className={`pill ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>{cat}</button>)}
+              </div>
+              <div className="filters-row">
+                <input type="text" className="search-input" placeholder="🔍 Название, отзыв, метро или тег..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                <select className="select-custom" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+                  <option value="Все">📖 Все статусы</option>
+                  <option value="Уже был">✅ Уже был</option>
+                  <option value="Хочу сходить">📌 Хочу сходить</option>
+                  <option value="Без статуса">⚪️ Без статуса</option>
+                </select>
+                <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
+                  <option value="Все">⭐️ Любой рейтинг</option>
+                  <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                  <option value="4">⭐⭐⭐⭐ (4)</option>
+                  <option value="3">⭐⭐⭐ (3)</option>
+                </select>
+                {viewMode === 'grid' && (
+                  <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <option value="newest">🕒 Сначала новые</option>
+                    <option value="oldest">⏳ Сначала старые</option>
+                    <option value="rating">🔥 По рейтингу</option>
+                  </select>
+                )}
+                <div className="view-toggle" style={{ marginLeft: 'auto' }}>
+                  <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
+                  <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На карте</button>
+                </div>
+              </div>
+            </div>
+
+            {filteredAndSortedSpots.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>Ничего не найдено 🤷‍♂️</div>
+            ) : viewMode === 'grid' ? (
+              <div className="grid-container">
+                {filteredAndSortedSpots.map(spot => (
+                  <div key={spot._id} className="spot-card">
+                    
+                    <div className="card-actions">
+                      <button className="action-btn story" onClick={(e) => { e.stopPropagation(); setStorySpot(spot); }} title="Сгенерировать Сторис">📲</button>
+                      {isAdmin && (
+                        <>
+                          <button className="action-btn" onClick={(e) => { e.stopPropagation(); handleEditClick(spot); }} title="Редактировать">✏️</button>
+                          <button className="action-btn delete" onClick={(e) => { e.stopPropagation(); handleDeleteClick(spot._id, spot.name); }} title="Удалить">🗑</button>
+                        </>
+                      )}
+                    </div>
+
+                  {spot.imageUrl ? (
+                      <img src={spot.imageUrl} alt={spot.name} className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальнее" />
+                    ) : (
+                      <div className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальнее">Нет фото</div>
+                    )}
+                    <div className="spot-content" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }}>
+                      <div className="badge-row">
+                        <span className="spot-tag">{spot.category}</span>
+                        {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
+                          <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
+                            {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="spot-title-row">
+                        <h3 className="spot-title">{spot.name}</h3>
+                        <span className="spot-price">{spot.priceLevel}</span>
+                      </div>
+                      {spot.location && <p className="spot-location">📍 {spot.location}</p>}
+                      {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : <p className="spot-rating" style={{ color: '#8b949e', fontSize: '12px' }}>Без оценки</p>}
+                      
+                      {spot.tags && spot.tags.length > 0 && (
+                        <div className="mini-tags-container">
+                          {spot.tags.map((tag, idx) => <span key={idx} className="mini-tag">#{tag}</span>)}
+                        </div>
+                      )}
+                      {spot.review && <p className="spot-review">"{spot.review}"</p>}
+                      <div className="links-row">
+                        {spot.instagramUrl && (
+                          <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }} title="Перейти в Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                              <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                            </svg>
+                          </a>
+                        )}                    
+                        {spot.googleMapsUrl && <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <button className="btn-primary" style={{ background: 'transparent', border: '1px solid #30363d', color: '#8b949e', padding: '10px' }} onClick={() => setIsLoginModalOpen(true)} title="Вход для админа">🔐</button>
-            )}
-            
-          </div>
-        </header>
-
-        <div className="filters-container">
-          <div className="categories-scroll">
-            {CATEGORIES.map(cat => <button key={cat} className={`pill ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>{cat}</button>)}
-          </div>
-          <div className="filters-row">
-            <input type="text" className="search-input" placeholder="🔍 Название, отзыв, метро или тег..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-            <select className="select-custom" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
-              <option value="Все">📖 Все статусы</option>
-              <option value="Уже был">✅ Уже был</option>
-              <option value="Хочу сходить">📌 Хочу сходить</option>
-              <option value="Без статуса">⚪️ Без статуса</option>
-            </select>
-            <select className="select-custom" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
-              <option value="Все">⭐️ Любой рейтинг</option>
-              <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-              <option value="4">⭐⭐⭐⭐ (4)</option>
-              <option value="3">⭐⭐⭐ (3)</option>
-            </select>
-            {viewMode === 'grid' && (
-              <select className="select-custom" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option value="newest">🕒 Сначала новые</option>
-                <option value="oldest">⏳ Сначала старые</option>
-                <option value="rating">🔥 По рейтингу</option>
-              </select>
+              <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} isAdmin={isAdmin} />
             )}
           </div>
-        </div>
-
-        {filteredAndSortedSpots.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>Ничего не найдено 🤷‍♂️</div>
-        ) : viewMode === 'grid' ? (
-          <div className="grid-container">
-            {filteredAndSortedSpots.map(spot => (
-              <div key={spot._id} className="spot-card">
-                
-                <div className="card-actions">
-                  <button className="action-btn story" onClick={() => setStorySpot(spot)} title="Сгенерировать Сторис">📲</button>
-                  {isAdmin && (
-                    <>
-                      <button className="action-btn" onClick={() => handleEditClick(spot)} title="Редактировать">✏️</button>
-                      <button className="action-btn delete" onClick={() => handleDeleteClick(spot._id, spot.name)} title="Удалить">🗑</button>
-                    </>
-                  )}
-                </div>
-
-              {spot.imageUrl ? (
-                  <img src={spot.imageUrl} alt={spot.name} className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальнее" />
-                ) : (
-                  <div className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальнее">Нет фото</div>
-                )}
-                <div className="spot-content">
-                  <div className="badge-row">
-                    <span className="spot-tag">{spot.category}</span>
-                    {spot.status && spot.status !== 'Без статуса' && spot.status !== '⚪️ Без статуса' && (
-                      <span className={`status-tag ${spot.status === 'Хочу сходить' ? 'wishlist' : ''}`}>
-                        {spot.status === 'Хочу сходить' ? '📌 Хочу сходить' : '✅ Уже был'}
-                      </span>
-                    )}
-                  </div>
-                  <div className="spot-title-row">
-                    <h3 className="spot-title">{spot.name}</h3>
-                    <span className="spot-price">{spot.priceLevel}</span>
-                  </div>
-                  {spot.location && <p className="spot-location">📍 {spot.location}</p>}
-                  {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : <p className="spot-rating" style={{ color: '#8b949e', fontSize: '12px' }}>Без оценки</p>}
-                  
-                  {spot.tags && spot.tags.length > 0 && (
-                    <div className="mini-tags-container">
-                      {spot.tags.map((tag, idx) => <span key={idx} className="mini-tag">#{tag}</span>)}
-                    </div>
-                  )}
-                  {spot.review && <p className="spot-review">{spot.review}</p>}
-                  <div className="links-row">
-                    {spot.instagramUrl && (
-                      <a href={spot.instagramUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ display: 'flex', alignItems: 'center' }} title="Перейти в Instagram">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                          <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-                        </svg>
-                      </a>
-                    )}                    
-                    {spot.googleMapsUrl && <a href={spot.googleMapsUrl} target="_blank" rel="noreferrer" className="spot-link" style={{ color: '#ffb86c' }}>🗺 Маршрут</a>}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <MapView spots={filteredAndSortedSpots} onEditClick={handleEditClick} isAdmin={isAdmin} />
-        )}
+        } />
+      </Routes>
 
         {storySpot && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '15px', flexDirection: 'column', gap: '20px' }}>
@@ -593,7 +631,6 @@ function App() {
         <footer style={{ textAlign: 'center', marginTop: '40px', padding: '20px 0', color: '#8b949e', fontSize: '14px', borderTop: '1px solid #30363d' }}>
           prod by Dmytro
         </footer>
-      </div>
     </>
   );
 }
