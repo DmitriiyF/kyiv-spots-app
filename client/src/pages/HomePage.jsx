@@ -2,9 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const HomePage = ({ spots }) => {
-  // Выбираем топ 4 заведения с рейтингом 5 или просто новые
   const topSpots = [...spots]
-    .filter(s => s.imageUrl) // желательно с фото
+    .filter(s => s.imageUrl)
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 4);
 
