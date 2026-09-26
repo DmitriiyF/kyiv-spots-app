@@ -277,7 +277,7 @@ function App() {
         .navbar {
           position: sticky; top: 0; z-index: 1000;
           background: rgba(13, 17, 23, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-          padding: 15px 4%; display: flex; justify-content: space-between; align-items: center;
+          padding: 8px 4%; display: flex; justify-content: space-between; align-items: center;
           flex-wrap: wrap; gap: 10px;
           margin-bottom: 20px;
           border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -383,7 +383,7 @@ function App() {
       <header className="navbar">
         <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center' }}>
           {siteSettings.logoUrl ? (
-            <img src={siteSettings.logoUrl} alt="Kyiv Spots" style={{ height: '72px', width: 'auto', objectFit: 'contain', borderRadius: '8px' }} />
+            <img src={siteSettings.logoUrl} alt="Kyiv Spots" style={{ height: '48px', width: 'auto', objectFit: 'contain', borderRadius: '8px' }} />
           ) : (
             <>
               <div style={{ background: 'linear-gradient(135deg, #58a6ff, #a371f7)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>K</div>
