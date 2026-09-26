@@ -589,6 +589,10 @@ function App() {
         </div>
 
         <SpotDetailsModal spot={detailedSpot} onClose={() => setDetailedSpot(null)} />
+        
+        <footer style={{ textAlign: 'center', marginTop: '40px', padding: '20px 0', color: '#8b949e', fontSize: '14px', borderTop: '1px solid #30363d' }}>
+          prod by Dmytro
+        </footer>
       </div>
     </>
   );
