@@ -82,8 +82,25 @@ function App() {
   };
 
   useEffect(() => {
-    fetchSpots();
-    fetchSettings();
+    // Вызываем асинхронные функции без синхронных setState внутри
+    const loadData = async () => {
+      try {
+        const [spotsRes, settingsRes] = await Promise.all([
+          axios.get('/api/spots'),
+          axios.get('/api/settings')
+        ]);
+        setSpots(spotsRes.data);
+        if (settingsRes.data) {
+          setSiteSettings({ 
+            logoUrl: settingsRes.data.logoUrl || '', 
+            bannerUrl: settingsRes.data.bannerUrl || '' 
+          });
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки данных', error);
+      }
+    };
+    loadData();
   }, []);
 
   const handleEditClick = (spot) => {

@@ -24,7 +24,7 @@ const HomePage = ({ spots, siteSettings }) => {
         justifyContent: 'flex-end',
         alignItems: 'flex-start',
         marginBottom: '40px',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: siteSettings?.bannerUrl ? 'none' : '1px solid rgba(255,255,255,0.05)',
         position: 'relative',
         overflow: 'hidden'
       }}>
@@ -35,14 +35,14 @@ const HomePage = ({ spots, siteSettings }) => {
           </>
         )}
 
-        <h1 style={{ fontSize: '48px', color: '#f0f6fc', marginBottom: '15px', fontWeight: 800, letterSpacing: '-1px', position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 10px rgba(0,0,0,0.8)' : 'none' }}>
-          Где провести время в Киеве?
+        <h1 style={{ fontSize: 'clamp(32px, 6vw, 48px)', color: '#f0f6fc', marginBottom: '15px', fontWeight: 800, letterSpacing: '-1px', position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 10px rgba(0,0,0,0.8)' : 'none' }}>
+          Де провести час у Києві?
         </h1>
-        <p style={{ fontSize: '18px', color: '#c9d1d9', maxWidth: '600px', margin: '0 0 25px 0', lineHeight: 1.6, position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 5px rgba(0,0,0,0.8)' : 'none' }}>
+        <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: '#c9d1d9', maxWidth: '600px', margin: '0 0 25px 0', lineHeight: 1.6, position: 'relative', zIndex: 1, textShadow: siteSettings?.bannerUrl ? '0 2px 5px rgba(0,0,0,0.8)' : 'none' }}>
           Я зібрав кращі заклади столиці — від затишних кав'ярень до топових ресторанів і барів.
         </p>
         <Link to="/spots" className="btn-primary" style={{ display: 'inline-block', fontSize: '16px', padding: '12px 24px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
-          Смотреть все заведения
+          Дивитись всі заклади
         </Link>
       </div>
 
