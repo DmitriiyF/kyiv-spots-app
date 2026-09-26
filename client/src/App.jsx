@@ -260,8 +260,10 @@ function App() {
   return (
     <>
       <style>{`
-        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        * { box-sizing: border-box; }
+        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; }
+        body::-webkit-scrollbar { display: none; }
+        ::-webkit-scrollbar { display: none; }
+        * { box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; }
         
         /* Modern Glassmorphism NavBar */
         .navbar {
