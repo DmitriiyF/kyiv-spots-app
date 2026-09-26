@@ -260,7 +260,8 @@ function App() {
   return (
     <>
       <style>{`
-        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; }
+        html, body, #root { max-width: 100vw; overflow-x: hidden; }
+        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; -ms-overflow-style: none; scrollbar-width: none; }
         body::-webkit-scrollbar { display: none; }
         ::-webkit-scrollbar { display: none; }
         * { box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; }
@@ -271,14 +272,15 @@ function App() {
           background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid rgba(255,255,255,0.05);
           padding: 15px 4%; display: flex; justify-content: space-between; align-items: center;
+          flex-wrap: wrap; gap: 10px;
           margin-bottom: 20px;
         }
         .nav-logo {
           display: flex; align-items: center; gap: 10px; text-decoration: none;
         }
-        .nav-logo h1 { margin: 0; color: #f0f6fc; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-        .nav-links { display: flex; gap: 20px; align-items: center; }
-        .nav-link { color: #8b949e; text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        .nav-logo h1 { margin: 0; color: #f0f6fc; font-size: clamp(18px, 5vw, 24px); font-weight: 800; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .nav-link { color: #8b949e; text-decoration: none; font-weight: 600; font-size: clamp(14px, 4vw, 16px); transition: color 0.2s; }
         .nav-link:hover, .nav-link.active { color: #f0f6fc; }
 
         .filters-container { background: rgba(22, 27, 34, 0.5); backdrop-filter: blur(8px); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
