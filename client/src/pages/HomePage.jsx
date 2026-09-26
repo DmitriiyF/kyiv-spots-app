@@ -52,7 +52,7 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
         style={{ 
           position: 'fixed', 
           right: isRandomOpen ? '0' : '-160px', 
-          top: '65%', 
+          top: '75%', 
           transform: 'translateY(-50%)', 
           display: 'flex', 
           alignItems: 'center', 
