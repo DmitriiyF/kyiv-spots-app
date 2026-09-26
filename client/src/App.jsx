@@ -51,6 +51,7 @@ function App() {
   const [selectedStatus, setSelectedStatus] = useState('Всі');
   const [sortBy, setSortBy] = useState('newest');
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [mobileCols, setMobileCols] = useState(2);
 
   const [formData, setFormData] = useState(initialFormState);
   const [siteSettings, setSiteSettings] = useState({ logoUrl: '', bannerUrl: '' });
@@ -302,7 +303,7 @@ function App() {
         .select-custom { padding: 12px 20px; background: rgba(13, 17, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; border-radius: 20px; outline: none; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .select-custom:focus { border-color: #58a6ff; }
 
-        .grid-container { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 10px 0; }
+        .grid-container { display: grid; grid-template-columns: repeat(var(--mobile-cols, 1), 1fr); gap: 16px; padding: 10px 0; }
         .home-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 10px 0; }
         
         .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
@@ -354,11 +355,8 @@ function App() {
         .view-btn { background: transparent; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; border-radius: 8px; transition: 0.2s; }
         .view-btn.active { background: #30363d; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        @media (min-width: 500px) {
-          .grid-container { grid-template-columns: repeat(2, 1fr); }
-        }
         @media (min-width: 768px) {
-          .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 20px 0; }
+          .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; gap: 24px; padding: 20px 0; }
           .home-grid-container { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
           .spot-image-wrapper { height: 220px; }
           .spot-title { font-size: 20px; }
@@ -414,11 +412,18 @@ function App() {
                 <div className="categories-scroll" style={{ flexGrow: 1 }}>
                   {CATEGORIES.map(cat => <button key={cat} className={`pill ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>{cat}</button>)}
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <div className="view-toggle" style={{ display: 'flex' }}>
                     <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
                     <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На мапі</button>
                   </div>
+                  {viewMode === 'grid' && (
+                    <div className="view-toggle" style={{ display: 'flex' }}>
+                      <button className={`view-btn ${mobileCols === 1 ? 'active' : ''}`} onClick={() => setMobileCols(1)} title="1 в ряд">1 ⏹</button>
+                      <button className={`view-btn ${mobileCols === 2 ? 'active' : ''}`} onClick={() => setMobileCols(2)} title="2 в ряд">2 ⏸</button>
+                      <button className={`view-btn ${mobileCols === 3 ? 'active' : ''}`} onClick={() => setMobileCols(3)} title="3 в ряд">3 ⧸⧸⧸</button>
+                    </div>
+                  )}
                   <button className="btn-primary" style={{ padding: '8px 12px', background: 'rgba(13, 17, 23, 0.6)', border: '1px solid rgba(255,255,255,0.1)', color: '#c9d1d9', display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => setIsFiltersOpen(!isFiltersOpen)}>
                     Фільтри {isFiltersOpen ? '▲' : '▼'}
                   </button>
@@ -454,7 +459,7 @@ function App() {
             {filteredAndSortedSpots.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px', color: '#8b949e', fontSize: '18px' }}>Нічого не знайдено 🤷‍♂️</div>
             ) : viewMode === 'grid' ? (
-              <div className="grid-container">
+              <div className="grid-container" style={{ '--mobile-cols': mobileCols }}>
                 {filteredAndSortedSpots.map(spot => (
                   <div key={spot._id} className="spot-card">
                     
@@ -754,7 +759,10 @@ function App() {
         <SpotDetailsModal spot={detailedSpot} onClose={() => setDetailedSpot(null)} />
         
         <footer style={{ textAlign: 'center', marginTop: '40px', padding: '20px 0', color: '#8b949e', fontSize: '14px', borderTop: '1px solid #30363d' }}>
-          prod by Dmytro
+          <div>prod by Dmytro</div>
+          <div style={{ marginTop: '10px', fontSize: '12px', maxWidth: '400px', margin: '10px auto 0 auto', lineHeight: '1.4' }}>
+            Якщо сайт не працює то це значить що сервер вже прокидається і треба почекати 1 хвилинку, якщо він не завантажується більше то пишіть мені
+          </div>
         </footer>
     </>
   );
