@@ -54,20 +54,30 @@ const HomePage = ({ spots, siteSettings, onSpotClick }) => {
             {topSpots.map(spot => (
               <div key={spot._id} className="spot-card" onClick={() => onSpotClick && onSpotClick(spot)} style={{ cursor: 'pointer' }} title="Детальніше">
                 {spot.imageUrl ? (
-                  <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
+                  <div className="spot-image-wrapper">
+                    <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
+                    <div className="spot-gradient"></div>
+                    <div className="spot-badges-top">
+                      <span className="spot-tag">
+                        {spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}
+                      </span>
+                    </div>
+                    {spot.rating ? <div className="spot-rating-top">{'⭐️'.repeat(spot.rating)}</div> : null}
+                  </div>
                 ) : (
-                  <div className="spot-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>Немає фото</div>
+                  <div className="spot-image-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px' }}>
+                    Немає фото
+                    <div className="spot-badges-top">
+                      <span className="spot-tag">
+                        {spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}
+                      </span>
+                    </div>
+                  </div>
                 )}
                 <div className="spot-content">
-                  <div className="badge-row">
-                    <span className="spot-tag">
-                      {spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}
-                    </span>
-                  </div>
                   <div className="spot-title-row">
                     <h3 className="spot-title">{spot.name}</h3>
                   </div>
-                  {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : null}
                 </div>
               </div>
             ))}

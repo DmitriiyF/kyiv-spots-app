@@ -304,8 +304,8 @@ function App() {
 
         .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 10px 0; }
         
-        .spot-card { background: rgba(22, 27, 34, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; position: relative; }
-        .spot-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.15); background: rgba(22, 27, 34, 0.8); }
+        .spot-card { background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
+        .spot-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.5); border-color: rgba(88, 166, 255, 0.4); }
         
         .card-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 100; opacity: 0; transition: opacity 0.2s; }
         .spot-card:hover .card-actions { opacity: 1; }
@@ -313,32 +313,35 @@ function App() {
         .action-btn.delete:hover { background: #da3637; color: white; border-color: #f85149; }
         .action-btn.story:hover { background: #a371f7; color: white; border-color: #d2a8ff; }
 
-        .spot-image { width: 100%; height: 180px; object-fit: cover; background: #21262d; }
+        .spot-image-wrapper { position: relative; width: 100%; height: 200px; background: #21262d; }
+        .spot-image { width: 100%; height: 100%; object-fit: cover; }
+        .spot-gradient { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(22,27,34,1) 0%, transparent 100%); pointer-events: none; }
         
-        .spot-content { padding: 0 16px 16px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }
+        .spot-badges-top { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 10; }
+        .spot-tag, .status-tag { background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .spot-tag { color: #4ade80; }
+        .status-tag.wishlist { color: #facc15; }
         
-        .badge-row { position: relative; margin-top: -32px; margin-left: 16px; margin-bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 90; }
-        
-        .spot-tag { background: rgba(35, 134, 54, 0.9); backdrop-filter: blur(4px); color: white; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
-        .status-tag { background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .spot-rating-top { position: absolute; bottom: 12px; right: 12px; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px); padding: 4px 8px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(255,255,255,0.15); z-index: 10; }
 
-        .spot-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-top: 4px; }
-        .spot-title { margin: 0; color: #f0f6fc; font-size: 16px; font-weight: 700; word-wrap: break-word; line-height: 1.3; }
-        .spot-price { font-size: 14px; color: #8b949e; font-weight: bold; white-space: nowrap; }
-        .spot-location { font-size: 12px; color: #8b949e; margin: 0; display: flex; align-items: center; gap: 4px; }
-        .spot-rating { margin: 0; font-size: 14px; }
+        .spot-content { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 20; background: #161b22; margin-top: -10px; border-radius: 12px 12px 0 0; }
         
-        .mini-tags-container { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0; }
+        .spot-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .spot-title { margin: 0; color: #f0f6fc; font-size: 18px; font-weight: 700; line-height: 1.2; }
+        .spot-price { color: #8b949e; font-size: 14px; font-weight: bold; }
+        .spot-location { color: #8b949e; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 4px; }
+        
+        .mini-tags-container { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0; }
         .mini-tag { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #8b949e; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
 
-        .spot-review { margin: 0; font-size: 13px; color: #8b949e; line-height: 1.5; flex-grow: 1; }
-        .links-row { display: flex; gap: 12px; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .spot-review { margin: 4px 0 0 0; font-size: 13px; color: #c9d1d9; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
+        .links-row { display: flex; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
         .spot-link { color: #58a6ff; text-decoration: none; font-size: 13px; font-weight: 600; transition: color 0.2s; }
         .spot-link:hover { color: #79c0ff; }
         
-        .map-container-wrapper { height: 600px; width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px; }
-        .leaflet-popup-content-wrapper { background: rgba(22, 27, 34, 0.9) !important; backdrop-filter: blur(8px); color: #c9d1d9 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; }
-        .leaflet-popup-tip { background: rgba(22, 27, 34, 0.9) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+        .map-container-wrapper { height: 600px; width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid #30363d; margin-top: 10px; }
+        .leaflet-popup-content-wrapper { background: rgba(22, 27, 34, 0.95) !important; backdrop-filter: blur(8px); color: #c9d1d9 !important; border: 1px solid #30363d !important; border-radius: 12px !important; }
+        .leaflet-popup-tip { background: rgba(22, 27, 34, 0.95) !important; border: 1px solid #30363d !important; }
         .leaflet-popup-content { margin: 12px !important; }
         .view-toggle { display: flex; background: rgba(13, 17, 23, 0.5); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); padding: 2px; }
         .view-btn { background: transparent; border: none; color: #8b949e; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; border-radius: 8px; transition: 0.2s; }
@@ -346,18 +349,10 @@ function App() {
 
         @media (min-width: 768px) {
           .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 20px 0; }
-          .spot-card { border-radius: 24px; }
-          .spot-image { height: 220px; }
-          .badge-row { margin-left: 20px; margin-bottom: 16px; }
-          .spot-content { padding: 0 20px 20px; gap: 12px; }
-          .spot-tag, .status-tag { padding: 6px 14px; border-radius: 10px; font-size: 12px; }
+          .spot-image-wrapper { height: 220px; }
           .spot-title { font-size: 20px; }
           .spot-price { font-size: 15px; }
           .spot-location { font-size: 14px; }
-          .spot-rating { font-size: 16px; }
-          .mini-tag { font-size: 12px; padding: 4px 10px; border-radius: 8px; }
-          .spot-review { font-size: 14px; }
-          .spot-link { font-size: 14px; }
         }
 
         .btn-primary { background: #58a6ff; color: #0d1117; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
@@ -463,25 +458,33 @@ function App() {
                     </div>
 
                   {spot.imageUrl ? (
-                      <img src={spot.imageUrl} alt={spot.name} className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальніше" />
+                      <div className="spot-image-wrapper" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }} title="Детальніше">
+                        <img src={spot.imageUrl} alt={spot.name} className="spot-image" />
+                        <div className="spot-gradient"></div>
+                        <div className="spot-badges-top">
+                          <span className="spot-tag">{spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}</span>
+                          {spot.status && spot.status !== 'Без статуса' && spot.status !== 'Без статусу' && spot.status !== '⚪️ Без статуса' && spot.status !== '⚪️ Без статусу' && (
+                            <span className={`status-tag ${spot.status === 'Хочу сходить' || spot.status === 'Хочу відвідати' ? 'wishlist' : ''}`}>
+                              {spot.status === 'Хочу сходить' || spot.status === 'Хочу відвідати' ? '📌 Хочу відвідати' : '✅ Вже був'}
+                            </span>
+                          )}
+                        </div>
+                        {spot.rating ? <div className="spot-rating-top">{'⭐️'.repeat(spot.rating)}</div> : null}
+                      </div>
                     ) : (
-                      <div className="spot-image" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальніше">Немає фото</div>
+                      <div className="spot-image-wrapper" onClick={() => setDetailedSpot(spot)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e', fontSize: '14px', cursor: 'pointer' }} title="Детальніше">
+                        Немає фото
+                        <div className="spot-badges-top">
+                          <span className="spot-tag">{spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}</span>
+                        </div>
+                      </div>
                     )}
                     <div className="spot-content" onClick={() => setDetailedSpot(spot)} style={{ cursor: 'pointer' }}>
-                      <div className="badge-row">
-                        <span className="spot-tag">{spot.category === 'Кофейня' ? 'Кав\'ярня' : spot.category === 'Парк / Локация' ? 'Парк / Локація' : spot.category}</span>
-                        {spot.status && spot.status !== 'Без статуса' && spot.status !== 'Без статусу' && spot.status !== '⚪️ Без статуса' && spot.status !== '⚪️ Без статусу' && (
-                          <span className={`status-tag ${spot.status === 'Хочу сходить' || spot.status === 'Хочу відвідати' ? 'wishlist' : ''}`}>
-                            {spot.status === 'Хочу сходить' || spot.status === 'Хочу відвідати' ? '📌 Хочу відвідати' : '✅ Вже був'}
-                          </span>
-                        )}
-                      </div>
                       <div className="spot-title-row">
                         <h3 className="spot-title">{spot.name}</h3>
                         <span className="spot-price">{spot.priceLevel}</span>
                       </div>
                       {spot.location && <p className="spot-location">📍 {spot.location}</p>}
-                      {spot.rating ? <p className="spot-rating">{'⭐️'.repeat(spot.rating)}</p> : <p className="spot-rating" style={{ color: '#8b949e', fontSize: '12px' }}>Без оцінки</p>}
                       
                       {spot.tags && spot.tags.length > 0 && (
                         <div className="mini-tags-container">
