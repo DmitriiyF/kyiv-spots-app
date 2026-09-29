@@ -1,4 +1,7 @@
-import express from 'express';
+const fs = require('fs');
+
+// 1. REWRITE SERVER/INDEX.JS COMPLETELY FROM SCRATCH IN PRISTINE UTF-8
+const serverCode = `import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -130,6 +133,19 @@ app.post('/api/settings', verifyAdmin, async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Сервер працює на порту ${PORT}`);
+    console.log(\`🚀 Сервер працює на порту \${PORT}\`);
     addServerLog('🚀 Сервер успішно запущено');
 });
+`;
+
+fs.writeFileSync('server/index.js', serverCode, 'utf8');
+
+// 2. CLEAR FRONTEND CORRUPTED LOGS
+let clientCode = fs.readFileSync('client/src/App.jsx', 'utf8');
+clientCode = clientCode.replace(
+    /return saved \? JSON\.parse\(saved\) : \[\];/,
+    "const parsed = saved ? JSON.parse(saved) : []; if(parsed.some(l=>l.message && l.message.includes(''))) return []; return parsed;"
+);
+fs.writeFileSync('client/src/App.jsx', clientCode, 'utf8');
+
+console.log("Everything fixed!");

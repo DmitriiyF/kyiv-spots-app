@@ -44,13 +44,13 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
 
   const [logs, setLogs] = useState(() => {
-    const saved = localStorage.getItem('appLogs');
-    return saved ? JSON.parse(saved) : [];
+    const saved = localStorage.getItem('clientLogs_v2');
+    const parsed = saved ? JSON.parse(saved) : []; if(parsed.some(l=>l.message && l.message.includes(''))) return []; return parsed;
   });
   const [serverLogs, setServerLogs] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem('appLogs', JSON.stringify(logs.slice(0, 50)));
+    localStorage.setItem('clientLogs_v2', JSON.stringify(logs.slice(0, 50)));
   }, [logs]);
 
   useEffect(() => {
