@@ -17,7 +17,7 @@ app.use(express.json());
 
 const serverLogs = [];
 const addServerLog = (msg) => {
-    const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+    const time = new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Kyiv', hour12: false });
     serverLogs.unshift({ time, message: msg, type: 'info' });
     if (serverLogs.length > 50) serverLogs.pop();
 };
