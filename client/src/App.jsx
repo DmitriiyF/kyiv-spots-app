@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView'; 
 import 'leaflet/dist/leaflet.css'; 
@@ -32,8 +32,13 @@ const extractCoords = (url) => {
 
 function App() {
   const [spots, setSpots] = useState([]);
-  const [logs, setLogs] = useState(() => { const saved = localStorage.getItem('appLogs'); return saved ? JSON.parse(saved) : []; });
-  useEffect(() => { localStorage.setItem('appLogs', JSON.stringify(logs.slice(0, 50))); }, [logs]);
+  const [logs, setLogs] = useState(() => {
+    const saved = localStorage.getItem('appLogs');
+    return saved ? JSON.parse(saved) : [];
+  });
+  useEffect(() => {
+    localStorage.setItem('appLogs', JSON.stringify(logs.slice(0, 50)));
+  }, [logs]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpotId, setEditingSpotId] = useState(null);
@@ -66,7 +71,6 @@ function App() {
   };
 
   const fetchSpots = async () => {
-    
     try {
       const res = await axios.get('/api/spots');
       setSpots(res.data);
@@ -204,9 +208,7 @@ function App() {
     if (editingSpotId) {
       try {
         await axios.put(`/api/spots/${editingSpotId}`, payload, getConfig());
-
-        addLog('������ ������������: ' + payload.name, 'success');
-
+        addLog(`Успішно відредаговано: "${payload.name}"`, 'success');
         closeModal(); fetchSpots();
       } catch (error) {
         setIsLogsOpen(true);
@@ -215,9 +217,7 @@ function App() {
     } else {
       try {
         await axios.post('/api/spots', payload, getConfig());
-
-        addLog('������ ������: ' + payload.name, 'success');
-
+        addLog(`Успішно додано: "${payload.name}"`, 'success');
         closeModal(); fetchSpots();
       } catch (error) {
         setIsLogsOpen(true);
@@ -234,7 +234,7 @@ function App() {
     const element = document.getElementById('story-card-export');
     if (!element) return;
     
-    
+    addLog('Генерируем сторис...', 'info');
     try {
       const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: '#161b22' });
       const image = canvas.toDataURL("image/png");
@@ -784,6 +784,3 @@ function App() {
 }
 
 export default App;
-
-
-
