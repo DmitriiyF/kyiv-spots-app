@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import MapView from './components/MapView'; 
+import MapView from './components/MapView';
+import RadarView from './components/RadarView'; 
 import 'leaflet/dist/leaflet.css'; 
 import ImageUploader from './components/ImageUploader';
 import html2canvas from 'html2canvas';
