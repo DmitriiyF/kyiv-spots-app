@@ -22,7 +22,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // 🚀 Проверочный роут
 app.get('/api/ping', (req, res) => {
-    res.json({ message: "Сервер работает и готов к бою! 🚀" });
+    console.log('? Ping received from cron job - keeping server awake!'); res.json({ message: 'Server is awake!' });
 });
 
 // 🔐 МАРШРУТ ЛОГИНА (Выдает пропуск-токен, если пароль верный)
@@ -75,7 +75,7 @@ app.post('/api/spots', verifyAdmin, async (req, res) => {
 app.delete('/api/spots/:id', verifyAdmin, async (req, res) => {
     try {
         await Spot.findByIdAndDelete(req.params.id);
-        res.json({ message: "Заведение успешно удалено" });
+        console.log('? Ping received from cron job - keeping server awake!'); res.json({ message: 'Server is awake!' });
     } catch (err) {
         console.error("❌ ОШИБКА УДАЛЕНИЯ:", err.message);
         res.status(500).json({ error: "Ошибка при удалении" });
