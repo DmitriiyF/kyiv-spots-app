@@ -32,7 +32,8 @@ const extractCoords = (url) => {
 
 function App() {
   const [spots, setSpots] = useState([]);
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState(() => { const saved = localStorage.getItem('appLogs'); return saved ? JSON.parse(saved) : []; });
+  useEffect(() => { localStorage.setItem('appLogs', JSON.stringify(logs.slice(0, 50))); }, [logs]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpotId, setEditingSpotId] = useState(null);
@@ -65,7 +66,7 @@ function App() {
   };
 
   const fetchSpots = async () => {
-    addLog('Запрашиваем список...', 'info');
+    
     try {
       const res = await axios.get('/api/spots');
       setSpots(res.data);
@@ -233,7 +234,7 @@ function App() {
     const element = document.getElementById('story-card-export');
     if (!element) return;
     
-    addLog('Генерируем сторис...', 'info');
+    
     try {
       const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: '#161b22' });
       const image = canvas.toDataURL("image/png");
@@ -783,5 +784,6 @@ function App() {
 }
 
 export default App;
+
 
 
