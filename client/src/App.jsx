@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView';
-import RadarView from './components/RadarView'; 
 import 'leaflet/dist/leaflet.css'; 
 import ImageUploader from './components/ImageUploader';
 import html2canvas from 'html2canvas';
@@ -452,7 +451,6 @@ function App() {
                   <div className="view-toggle" style={{ display: 'flex' }}>
                     <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>📄 Списком</button>
                     <button className={`view-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>🗺 На мапі</button>
-                    <button className={`view-btn ${viewMode === 'radar' ? 'active' : ''}`} onClick={() => setViewMode('radar')}>🧭 Радар</button>
                   </div>
                   {viewMode === 'grid' && (
                     <div className="view-toggle" style={{ display: 'flex' }}>
