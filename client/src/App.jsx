@@ -770,7 +770,7 @@ function App() {
         {isAdmin && (
           <div style={{ position: 'fixed', bottom: '20px', right: '20px', width: '320px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.8)', zIndex: 1000, fontFamily: 'monospace' }}>
             <div onClick={() => setIsLogsOpen(!isLogsOpen)} style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: 'bold', borderBottom: isLogsOpen ? '1px solid #30363d' : 'none', fontSize: '14px' }}>
-              <span>📜 Логи сервера</span>
+              <span>📜 Логи сервера <button onClick={(e) => { e.stopPropagation(); axios.get('/api/server-logs').then(res => setServerLogs(res.data)).catch(e=>console.error('Fetch error:', e)); }} style={{background:'none', border:'none', color:'#58a6ff', cursor:'pointer', fontSize:'12px', marginLeft:'10px'}}>Оновити</button></span>
               <span>{isLogsOpen ? '▼' : '▲'}</span>
             </div>
             {isLogsOpen && (
