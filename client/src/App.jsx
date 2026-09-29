@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+п»їimport { useState, useEffect } from 'react';
 import axios from 'axios';
 import MapView from './components/MapView'; 
 import 'leaflet/dist/leaflet.css'; 
@@ -205,7 +205,7 @@ function App() {
       try {
         await axios.put(`/api/spots/${editingSpotId}`, payload, getConfig());
 
-        addLog('Успішно відредаговано: ' + payload.name, 'success');
+        addLog('пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ' + payload.name, 'success');
 
         closeModal(); fetchSpots();
       } catch (error) {
@@ -216,7 +216,7 @@ function App() {
       try {
         await axios.post('/api/spots', payload, getConfig());
 
-        addLog('Успішно додано: ' + payload.name, 'success');
+        addLog('пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: ' + payload.name, 'success');
 
         closeModal(); fetchSpots();
       } catch (error) {
