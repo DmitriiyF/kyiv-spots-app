@@ -85,7 +85,7 @@ app.delete('/api/spots/:id', verifyAdmin, async (req, res) => {
 // ✏️ РЕДАКТИРОВАТЬ заведение (🔒 ТОЛЬКО АДМИН)
 app.put('/api/spots/:id', verifyAdmin, async (req, res) => {
     try {
-        const updatedSpot = await Spot.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedSpot = await Spot.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
         res.json(updatedSpot);
     } catch (err) {
         console.error("❌ ОШИБКА ОБНОВЛЕНИЯ:", err.message);
