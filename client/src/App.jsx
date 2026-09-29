@@ -32,6 +32,17 @@ const extractCoords = (url) => {
 
 function App() {
   const [spots, setSpots] = useState([]);
+
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSpotId, setEditingSpotId] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); 
+  
+  const [storySpot, setStorySpot] = useState(null);
+  const [detailedSpot, setDetailedSpot] = useState(null); 
+  
+  const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
+
   const [logs, setLogs] = useState(() => {
     const saved = localStorage.getItem('appLogs');
     return saved ? JSON.parse(saved) : [];
@@ -44,20 +55,13 @@ function App() {
 
   useEffect(() => {
     if (isLogsOpen && isAdmin) {
-      axios.get('/api/server-logs').then(res => setServerLogs(res.data)).catch(() => {});
+      axios.get('/api/server-logs').then(res => {
+        if (Array.isArray(res.data)) setServerLogs(res.data);
+      }).catch(() => {});
     }
   }, [isLogsOpen, isAdmin]);
 
-  const allLogs = [...logs, ...serverLogs].sort((a, b) => b.time.localeCompare(a.time)).slice(0, 50);
-  const [isLogsOpen, setIsLogsOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSpotId, setEditingSpotId] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); 
-  
-  const [storySpot, setStorySpot] = useState(null);
-  const [detailedSpot, setDetailedSpot] = useState(null); 
-  
-  const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
+  const allLogs = [...(Array.isArray(logs)?logs:[]), ...(Array.isArray(serverLogs)?serverLogs:[])].filter(l => l && l.time).sort((a, b) => b.time.localeCompare(a.time)).slice(0, 50);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
 
