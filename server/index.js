@@ -15,6 +15,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'kyivspots_super_secret';
 app.use(cors());
 app.use(express.json());
 
+const serverLogs = [];
+const addServerLog = (msg) => {
+    const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+    serverLogs.unshift({ time, message: msg, type: 'info' });
+    if (serverLogs.length > 50) serverLogs.pop();
+};
+
+app.get('/api/server-logs', (req, res) => {
+    res.json(serverLogs);
+});
+
+
 // 🔌 Подключение к БД
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ Подключено к MongoDB! База kyiv_spots готова.'))
@@ -22,7 +34,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // 🚀 Проверочный роут
 app.get('/api/ping', (req, res) => {
-    console.log('? Ping received from cron job - keeping server awake!'); res.json({ message: 'Server is awake!' });
+    res.json({ message: "Сервер работает и готов к бою! 🚀" });
 });
 
 // 🔐 МАРШРУТ ЛОГИНА (Выдает пропуск-токен, если пароль верный)
@@ -75,7 +87,7 @@ app.post('/api/spots', verifyAdmin, async (req, res) => {
 app.delete('/api/spots/:id', verifyAdmin, async (req, res) => {
     try {
         await Spot.findByIdAndDelete(req.params.id);
-        console.log('? Ping received from cron job - keeping server awake!'); res.json({ message: 'Server is awake!' });
+        res.json({ message: "Заведение успешно удалено" });
     } catch (err) {
         console.error("❌ ОШИБКА УДАЛЕНИЯ:", err.message);
         res.status(500).json({ error: "Ошибка при удалении" });

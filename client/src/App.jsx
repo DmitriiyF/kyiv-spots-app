@@ -36,9 +36,19 @@ function App() {
     const saved = localStorage.getItem('appLogs');
     return saved ? JSON.parse(saved) : [];
   });
+  const [serverLogs, setServerLogs] = useState([]);
+
   useEffect(() => {
     localStorage.setItem('appLogs', JSON.stringify(logs.slice(0, 50)));
   }, [logs]);
+
+  useEffect(() => {
+    if (isLogsOpen && isAdmin) {
+      axios.get('/api/server-logs').then(res => setServerLogs(res.data)).catch(() => {});
+    }
+  }, [isLogsOpen, isAdmin]);
+
+  const allLogs = [...logs, ...serverLogs].sort((a, b) => b.time.localeCompare(a.time)).slice(0, 50);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpotId, setEditingSpotId] = useState(null);
@@ -761,7 +771,7 @@ function App() {
             </div>
             {isLogsOpen && (
               <div style={{ padding: '12px 16px', height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {logs.map((log, i) => (
+                {allLogs.map((log, i) => (
                   <div key={i} style={{ color: log.type === 'error' ? '#ff7b72' : log.type === 'success' ? '#3fb950' : '#8b949e', fontSize: '12px', borderBottom: '1px solid #21262d', paddingBottom: '8px' }}>
                     <span style={{ color: '#3fb950' }}>[{log.time}]</span> {log.message}
                   </div>
