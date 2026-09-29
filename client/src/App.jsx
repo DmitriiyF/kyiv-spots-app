@@ -203,6 +203,9 @@ function App() {
     if (editingSpotId) {
       try {
         await axios.put(`/api/spots/${editingSpotId}`, payload, getConfig());
+
+        addLog('Успішно відредаговано: ' + payload.name, 'success');
+
         closeModal(); fetchSpots();
       } catch (error) {
         setIsLogsOpen(true);
@@ -211,6 +214,9 @@ function App() {
     } else {
       try {
         await axios.post('/api/spots', payload, getConfig());
+
+        addLog('Успішно додано: ' + payload.name, 'success');
+
         closeModal(); fetchSpots();
       } catch (error) {
         setIsLogsOpen(true);
@@ -777,3 +783,5 @@ function App() {
 }
 
 export default App;
+
+
